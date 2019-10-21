@@ -32,9 +32,9 @@ def lookup_ifproc_file(obsnum,path='/data_lmt/ifproc/'):
             return lookup_ifproc_file(obsnum,path='/data_lmt/lmttpm/')
     return(filename)
 
-class ifproc_quick():
+class IFProcQuick():
     """ base class for reading quick information from IFPROC """
-    def __init__(self,filename,instrument='Sequoia'):
+    def __init__(self, filename, instrument='Sequoia'):
         self.filename = filename
         if os.path.isfile(self.filename):
             self.nc = netCDF4.Dataset(self.filename)
@@ -43,11 +43,11 @@ class ifproc_quick():
             self.receiver = b''.join(self.nc.variables['Header.Dcs.Receiver'][:]).decode().strip()
             self.nc.close()
         else:
-            print('ifproc_quick: file \'%s\' is not found'%(self.filename))
+            print('IFProcQuick: file \'%s\' is not found'%(self.filename))
 
 class IFProc():
     """ base class for reading generic header information from IFPROC """
-    def __init__(self,filename,instrument='Sequoia'):
+    def __init__(self, filename, instrument='Sequoia'):
         self.filename = filename
         if os.path.isfile(self.filename):
             self.nc = netCDF4.Dataset(self.filename)
