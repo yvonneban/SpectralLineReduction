@@ -9,9 +9,9 @@ python 3
 """
 import matplotlib.pyplot as pl
 import matplotlib.mlab as mlab
-from ifproc import *
-from spec import *
-from grid import *
+from lmtslr.ifproc.ifproc import *
+from lmtslr.spec.spec import *
+from lmtslr.grid.grid import *
 
 class spec_viewer():
     ''' Base class for viewer.  This handles some plotting basics.
