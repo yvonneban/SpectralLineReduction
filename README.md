@@ -5,3 +5,8 @@ Spectral Line Reduction software for SEQUOIA OTF mapping.
 $ virtualenv -p python3 venv
 $ source venv/bin/activate
 $ pip install -r requirements.txt
+
+# Ipython shell
+
+$ ipython profile create lmtslr
+$ ipython --profile=lmtslr
