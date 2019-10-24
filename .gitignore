@@ -10,6 +10,7 @@ build/
 .cache
 venv/
 henv/
+prototyping/
 *.db
 .env
 env_setup.sh
