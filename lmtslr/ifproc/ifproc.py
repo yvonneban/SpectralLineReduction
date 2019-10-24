@@ -200,7 +200,7 @@ class IFProc():
     def close_nc(self):
         self.nc.close()
 
-class IFProc_data(IFProc):
+class IFProcData(IFProc):
     """ reads an IFPROC data file, which is a time sequence of total power measurements """
     def __init__(self,filename,npix=16):
         self.npix = npix
