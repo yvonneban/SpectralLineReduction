@@ -88,8 +88,8 @@ def read_obsnum_bs(obsnum,list_of_pixels,bank,use_calibration,tsys=150.,path='/d
     ifproc_file = lookup_ifproc_file(obsnum,path=path+'ifproc/')
 
     # create the spec_bank object.  This reads all the roaches in the list "files"
-    I = ifproc_data(ifproc_file)
-    S = spec_bank_data(files,I,pixel_list=list_of_pixels,bank=bank)
+    I = IFProcData(ifproc_file)
+    S = SpecBankData(files,I,pixel_list=list_of_pixels,bank=bank)
 
     # check whether to use calibration and open necessary file
     if use_calibration == True:
@@ -97,8 +97,8 @@ def read_obsnum_bs(obsnum,list_of_pixels,bank,use_calibration,tsys=150.,path='/d
         calobsnum = S.calobsnum
         cal_files,ncalfiles = lookup_roach_files(calobsnum,roach_list,path=path+'spectrometer/')
         ifproc_cal_file = lookup_ifproc_file(calobsnum,path=path+'ifproc/')
-        ICal = ifproc_cal(ifproc_cal_file)
-        SCal = spec_bank_cal(cal_files,ICal,pixel_list=list_of_pixels)
+        ICal = IFProcCal(ifproc_cal_file)
+        SCal = SpecBankCal(cal_files,ICal,pixel_list=list_of_pixels)
         check_cal = SCal.test_cal(S)
         if check_cal > 0:
             print('WARNING: CAL MAY NOT BE CORRECT')
@@ -137,8 +137,8 @@ def read_obsnum_otf(obsnum,list_of_pixels,bank,use_calibration,tsys=150.,path='/
     ifproc_file = lookup_ifproc_file(obsnum,path=path+'ifproc/')
 
     # create the spec_bank object.  This reads all the roaches in the list "files"
-    I = ifproc_data(ifproc_file)
-    S = spec_bank_data(files,I,pixel_list=list_of_pixels,bank=bank)
+    I = IFProcData(ifproc_file)
+    S = SpecBankData(files,I,pixel_list=list_of_pixels,bank=bank)
 
     # check whether to use calibration and open necessary file
     if use_calibration == True:
@@ -146,8 +146,8 @@ def read_obsnum_otf(obsnum,list_of_pixels,bank,use_calibration,tsys=150.,path='/
         calobsnum = S.calobsnum
         cal_files,ncalfiles = lookup_roach_files(calobsnum,roach_list,path=path+'spectrometer/')
         ifproc_cal_file = lookup_ifproc_file(calobsnum,path=path+'ifproc/')
-        ICal = ifproc_cal(ifproc_cal_file)
-        SCal = spec_bank_cal(cal_files,ICal,pixel_list=list_of_pixels)
+        ICal = IFProcCal(ifproc_cal_file)
+        SCal = SpecBankCal(cal_files,ICal,pixel_list=list_of_pixels)
         check_cal = SCal.test_cal(S)
         if check_cal > 0:
             print('WARNING: CAL MAY NOT BE CORRECT')

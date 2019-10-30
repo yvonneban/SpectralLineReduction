@@ -399,7 +399,8 @@ class SpecBank():
         nregions = len(regions)
         channel_list = []
         for i in range(nregions):
-            channel_list = channel_list + range(regions[i][0],regions[i][1]+1)
+            # python 3 requires range to be converted to list
+            channel_list = channel_list + list(range(regions[i][0],regions[i][1]+1))
         nchannels = len(channel_list)
         return(channel_list,nchannels)
 
@@ -411,10 +412,11 @@ class SpecBank():
         for i in range(nregions):
             c0 = self.v2c(velocity_regions[i][0])
             c1 = self.v2c(velocity_regions[i][1])+1
+            # python 3 requires range to be converted to list
             if c1>c0:
-                channel_list = channel_list + range(c0,c1)
+                channel_list = channel_list + list(range(c0,c1))
             else:
-                channel_list = channel_list + range(c1,c0)                
+                channel_list = channel_list + list(range(c1,c0))
         nchannels = len(channel_list)
         if id == 'line':
             self.clist = channel_list
