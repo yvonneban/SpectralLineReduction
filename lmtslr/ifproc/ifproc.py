@@ -18,7 +18,7 @@ import os
 import fnmatch
 import ast
 
-from lmtslt.ifproc.RSRUtilities import TempSens # move into utils folder?
+from lmtslr.ifproc.RSRUtilities import TempSens # move into utils folder?
 from lmtslr.utils.ifproc_file_utils import lookup_ifproc_file
 """
 def lookup_ifproc_file(obsnum,path='/data_lmt/ifproc/'):
