@@ -1,7 +1,7 @@
-""" Module for viewing spec_bank data
+""" Module for viewing SpecBank data
 
-classes: spec_viewer, spec_bank_viewer, spec_cal_viewer
-uses: spec_bank, roach, ifproc, grid
+classes: SpecViewer, SpecBankViewer, SpecCalViewer
+uses: SpecBank, roach, IFProc, Grid
 author: FPS
 date: May 2018
 changes:
@@ -9,11 +9,12 @@ python 3
 """
 import matplotlib.pyplot as pl
 import matplotlib.mlab as mlab
-from lmtslr.ifproc.ifproc import *
-from lmtslr.spec.spec import *
-from lmtslr.grid.grid import *
 
-class spec_viewer():
+from lmtslr.ifproc.ifproc import IFProc
+from lmtslr.spec.spec import SpecBank
+from lmtslr.grid.grid import Grid
+
+class SpecViewer():
     ''' Base class for viewer.  This handles some plotting basics.
     '''
     def __init__(self,figure=1):
@@ -38,12 +39,12 @@ class spec_viewer():
         pl.close(self.figure)
 
 
-class spec_bank_viewer(spec_viewer):
+class SpecBankViewer(SpecViewer):
     def __init__(self,figure=1):
-        """ spec_bank_viewer provides methods to view data in a spec_bank
-            S is the spec_bank to be viewed
+        """ SpecBankViewer provides methods to view data in a SpecBank
+            S is the SpecBank to be viewed
         """
-        spec_viewer.__init__(self,figure)
+        SpecViewer.__init__(self,figure)
         
     def raw_waterfall(self,S,pixel,window,plot_range):
         """ raw_waterfall makes a waterfall plot of the reduced data; no baseline removed
@@ -59,7 +60,7 @@ class spec_bank_viewer(spec_viewer):
 
     def plot_spectrum(self,S,pixel,ispec,plot_axis,baseline_list,n_baseline_list):
         """ plots a specific spectrum in the time series for a specific pixel
-            S is the spec_bank object
+            S is the SpecBank object
             pixel is the pixel id for the spectra in the plot
             ispec identifies the specific spectrum in the time series to be plotted
             plot_axis gives the desired axis for the plot: [xlow, xhigh, ylow, yhigh]
@@ -81,7 +82,7 @@ class spec_bank_viewer(spec_viewer):
         
     def plot_peak_spectrum(self,S,pixel,plot_axis,baseline_list,n_baseline_list):
         """ plots the spectrum which gives maximum value in map
-            S is the spec_bank object
+            S is the SpecBank object
             pixel is the pixel id for the spectra in the plot
             plot_axis gives the desired axis for the plot: [xlow, xhigh, ylow, yhigh]
             baseline_list is a list of channels which will be averaged to provide a constant baseline
@@ -148,7 +149,7 @@ class spec_bank_viewer(spec_viewer):
 
     def waterfall(self,S,pixel,window,plot_range,baseline_list,n_baseline_list):
         """ waterfall makes a waterfall plot of the reduced data with baseline removed
-            S is the spec_bank object
+            S is the SpecBank object
             pixel is the pixel id for the spectra in the plot
             window indicates start and stop indices in the spectra time series: [start,stop]
             plot_range is the range of the intensity scale: [ta_min, ta_max]
@@ -176,7 +177,7 @@ class spec_bank_viewer(spec_viewer):
 
     def sanchez_map(self,S,map_region,grid_spacing,plot_range,pixel_list=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]):
         """ sanchez_map makes a "Sanchez Map" with all pixels displayed on sky in their grid positions
-            S is the spec_bank object
+            S is the SpecBank object
             map_region is the extent of the map: [low left, low right, high left, high right] (arcsec)
             grid_spacing is the size of the map cells (arcsec)
             pixel_list identifies the beams to be plotted
@@ -198,7 +199,7 @@ class spec_bank_viewer(spec_viewer):
         
     def map(self,S,map_region,grid_spacing,plot_range,pixel_list=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]):
         """ map aligns the individual maps for each pixel according to a nominal grid model
-            S is the spec_bank object
+            S is the SpecBank object
             map_region is the extent of the map: [low left, low right, high left, high right] (arcsec)
             grid_spacing is the size of the map cells (arcsec)
             pixel_list identifies the beams to be plotted
@@ -227,7 +228,7 @@ class spec_bank_viewer(spec_viewer):
 
     def pixel_map(self,S,pixel,map_region,grid_spacing,show_points=False):
         """ pixel_map maps results for a single pixel
-            S is the spec_bank object
+            S is the SpecBank object
             pixel is the pixel id to be plotted
             map_region is the extent of the map: [low left, low right, high left, high right] (arcsec)
             grid_spacing is the size of the map cells (arcsec)
@@ -312,12 +313,12 @@ class spec_bank_viewer(spec_viewer):
         pl.suptitle('%s: ObsNum %d\n%s %s GHz'%(S.obspgm,S.obsnum,S.receiver,S.line_rest_frequency)) 
 
 
-class spec_cal_viewer(spec_viewer):
+class SpecCalViewer(SpecViewer):
     def __init__(self,figure=1):
-        """ spec_cal_viewer provides methods to view data in a spec_cal
+        """ SpecCalViewer provides methods to view data in a spec_cal
             S is the spec_cal to be viewed
         """
-        spec_viewer.__init__(self,figure)
+        SpecViewer.__init__(self,figure)
         
     def plot_tsys(self,S):
         plot_scale = 0.

@@ -1,8 +1,8 @@
 """ Module to read a set of spectra from the spectrometer
 
-classes: spec_bank, roach_spec, spec_bank_data, spec_bank_cal
+classes: RoachSpec, SpecBank, SpecBankData, SpecBankCal
 methods: lookup_roach_files, find_roach_from_pixel, create_roach_list
-uses: ifproc, grid
+uses: IFProc, Grid
 author: FPS
 date: May 2018
 changes:
@@ -17,9 +17,9 @@ import netCDF4
 from scipy import interpolate
 from operator import itemgetter
 from itertools import groupby
-from lmtslr.grid.grid import Grid
 
-from lmtslr.ifproc.ifproc import *
+from lmtslr.grid.grid import Grid
+from lmtslr.ifproc.ifproc import IFProc
 
 # define all the pixels in the roach boards they appear in
 roach_pixels_all = [[0,1,2,3],[4,5,6,7],[8,9,10,11],[12,13,14,15]]

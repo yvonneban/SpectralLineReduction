@@ -1,7 +1,7 @@
 """ Module for reading and operating on IFPROC files 
 
-classes: ifproc, ifproc_data, ifproc_cal
-function: lookup_ifproc_file
+classes: IFProc, IFProcData, IFProcCal
+function: 
 uses: numpy, math, netCDF4, os, fnmatch, RSRUtilities.TempSens
 author: FPS
 date: May 2018
@@ -17,8 +17,10 @@ import netCDF4
 import os
 import fnmatch
 import ast
-from .RSRUtilities import TempSens
 
+from lmtslt.ifproc.RSRUtilities import TempSens # move into utils folder?
+from lmtslr.utils.ifproc_file_utils import lookup_ifproc_file
+"""
 def lookup_ifproc_file(obsnum,path='/data_lmt/ifproc/'):
     filename = ''
     for file in os.listdir(path):
@@ -31,7 +33,7 @@ def lookup_ifproc_file(obsnum,path='/data_lmt/ifproc/'):
             print('look in lmttpm')
             return lookup_ifproc_file(obsnum,path='/data_lmt/lmttpm/')
     return(filename)
-
+"""
 class IFProcQuick():
     """ base class for reading quick information from IFPROC """
     def __init__(self, filename, instrument='Sequoia'):

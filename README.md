@@ -31,3 +31,26 @@ pl.plot(LD_0.xarray,LD_0.yarray)
 pl.axis([-20, 20, -1, 1])
 pl.xlabel(LD_0.xname)
 ```
+
+# Windows Installation and Setup
+
+After cloning the distribution, ensure you have virtualenv installed.  If not, install it via "pip install virtualenv".  Afterwards, change directory to the local installation of the distribution and initialize the virtualenv using virtualenv -p 3 venv.  
+
+Change directory to venv/Scripts and run activate.bat. 
+
+Return to the original SpectralLineReduction directory and run the command "pip install -r requirements.txt"
+
+To test that setup was successful, run the test PS reduction above.
+
+
+
+
+
+
+
+
+
+
+
+
+
