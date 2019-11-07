@@ -134,7 +134,7 @@ class TempSens():
     def validate(self):
         """Checks the values in the array to see if valid."""
         for i in range(len(self.tempsens)):
-            if self.tempsens[i] < 10 or self.tempsens[i] > 310:
+            if self.tempsens[i] < 200 or self.tempsens[i] > 310:
                 self.valid[i] = 0
             else:
                 self.valid[i] = 1
