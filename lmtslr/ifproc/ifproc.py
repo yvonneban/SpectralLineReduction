@@ -17,8 +17,9 @@ import netCDF4
 import os
 import fnmatch
 import ast
-from .RSRUtilities import TempSens
-
+from .RSRUtilities import TempSens # move into utils folder?
+from lmtslr.utils.ifproc_file_utils import lookup_ifproc_file
+"""
 def lookup_ifproc_file(obsnum,path='/data_lmt/ifproc/'):
     filename = ''
     for file in os.listdir(path):
@@ -31,7 +32,7 @@ def lookup_ifproc_file(obsnum,path='/data_lmt/ifproc/'):
             print('look in lmttpm')
             return lookup_ifproc_file(obsnum,path='/data_lmt/lmttpm/')
     return(filename)
-
+"""
 class IFProcQuick():
     """ base class for reading quick information from IFPROC """
     def __init__(self, filename, instrument='Sequoia'):
