@@ -9,6 +9,8 @@ python 3
 """
 import matplotlib.pyplot as pl
 import matplotlib.mlab as mlab
+import numpy as np
+import math
 
 from lmtslr.ifproc.ifproc import IFProc
 from lmtslr.spec.spec import SpecBank
