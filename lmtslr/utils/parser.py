@@ -317,7 +317,7 @@ class HandleGridOptions():
             elif opt in ("--cell"):
                 self.cell = eval(arg)
             elif opt in ("--pix_list"):
-                self.pix_list = eval(arg)
+                self.pix_list = arg
             elif opt in ("--rms_cut"):
                 self.rms_cut = eval(arg)
             elif opt in ("--x_extent"):
