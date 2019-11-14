@@ -1,6 +1,6 @@
-'''
+"""
 Reads a SpecFile and creates a data cube
-'''
+"""
 
 # Python Imports	
 import numpy as np		
