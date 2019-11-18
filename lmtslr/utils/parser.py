@@ -12,6 +12,7 @@ class HandleProcessOptions():
         self.obs_list = []
         self.bank = 0
         self.pix_list = []
+        self.eliminate_list = []
         self.use_cal = False
         self.tsys = 0.
         self.x_axis = 'VLSR'
@@ -44,6 +45,7 @@ class HandleProcessOptions():
                                        "obs_list=",
                                        "bank=",
                                        "pix_list=",
+                                       "eliminate_list=",
                                        "use_cal=",
                                        "tsys=",
                                        "x_axis=",
@@ -76,6 +78,8 @@ class HandleProcessOptions():
                 self.bank = eval(arg)
             elif opt in ("--pix_list"):
                 self.pix_list = eval(arg)
+            elif opt in ("--eliminate_list"):
+                self.eliminate_list = eval(arg)
             elif opt in ("--use_cal"):
                 self.decode_cal_string(arg)
             elif opt in ("--tsys"):
@@ -117,6 +121,7 @@ class HandleProcessOptions():
         print('obsnum list      = ',self.obs_list)
         print('bank             = ',self.bank)
         print('pixel list       = ',self.pix_list)
+        print('eliminate list   = ',self.eliminate_list)
         print('use cal          = ',self.use_cal)
         print('tsys             = ',self.tsys)
         print('baseline order   = ',self.b_order)
@@ -136,6 +141,7 @@ class HandleProcessOptions():
         print('--obs_list       : enter list of obsnums')
         print('--bank           : spectral bank for processing')
         print('--pix_list       : enter list of pixels for processing')
+        print('--eliminate_list : list of channels to be eliminated')
         print('CALIBRATION')
         print('--use_cal        : use calibration scan for cal')
         print('--tsys           : value for tsys if use_cal==False')

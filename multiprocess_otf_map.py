@@ -110,6 +110,7 @@ def multiprocess_otf_map(Opts, I, ICal):
             # process each spectrum
             L = LineData(I,Opts.bank,S.nchan,S.bandwidth,S.roach[i].reduced_spectra[j])
             LL = L.vslice(Opts.slice[0],Opts.slice[1])
+            LL.eliminate(Opts.eliminate_list)
             bbase,nbase = LL.xlist(Opts.b_regions)
             LL.baseline(bbase,nbase,baseline_order=Opts.b_order)
         

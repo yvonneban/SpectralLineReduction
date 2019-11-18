@@ -251,6 +251,8 @@ void write_fits_cube(Cube *C, char *filename)
 	      ic++;
 	    }
 
+  // you MUST initialize status
+  status = 0;
   if((retval=fits_create_file(&fptr, filename, &status)) != 0)
     print_fits_error(status);
 
