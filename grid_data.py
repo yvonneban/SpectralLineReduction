@@ -1,6 +1,6 @@
-'''
+"""
 Reads a SpecFile and creates a data cube
-'''
+"""
 
 # Python Imports	
 import numpy as np		
@@ -26,14 +26,19 @@ def main(argv):
     if os.path.isfile(Opts.output_file_name) == True:
         os.remove(Opts.output_file_name) 
 
+    print(Opts.pix_list)
+    print(Opts.program_path)
     with open('out.txt','w+') as outputfile:
         with open('err.txt','w+') as errorfile:
+
+            #exit_code = subprocess.call(['./test_otf','-i',Opts.input_file_name,'-u',Opts.pix_list],stdout=outputfile,stderr=errorfile)
             exit_code=subprocess.call([Opts.program_path,
                                        '-i',Opts.input_file_name,
                                        '-o',Opts.output_file_name,
                                        '-f',str(Opts.otf_select),
                                        '-l',str(Opts.resolution),
                                        '-c',str(Opts.cell),
+                                       '-u',Opts.pix_list,
                                        '-z',str(Opts.rms_cut),
                                        '-n',str(Opts.n_samples),
                                        '-r',str(Opts.rmax),
@@ -44,6 +49,7 @@ def main(argv):
                                        '-y',str(Opts.y_extent)],
                                       stdout=outputfile,
                                       stderr=errorfile)
+            
             # reset stdout file to read from it
             outputfile.seek(0)
             # save output (if any) in variable

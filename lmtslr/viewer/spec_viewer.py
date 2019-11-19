@@ -7,8 +7,21 @@ date: May 2018
 changes:
 python 3
 """
-import matplotlib.pyplot as pl
-import matplotlib.mlab as mlab
+import matplotlib
+gui_env = ['Agg', 'TKAgg','GTKAgg','Qt4Agg','WXAgg']
+for gui in gui_env:
+    try:
+        print ("testing", gui)
+        matplotlib.use(gui,warn=False)
+        from matplotlib import pyplot as pl
+        from matplotlib import mlab as mlab
+        print ("Using:", matplotlib.get_backend())
+        break
+    except Exception as e:
+        print (e)
+        continue
+import numpy as np
+import math
 
 from lmtslr.ifproc.ifproc import IFProc
 from lmtslr.spec.spec import SpecBank
