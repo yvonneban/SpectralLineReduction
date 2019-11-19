@@ -50,9 +50,13 @@ def read_obsnum_ps(obsnum,list_of_pixels,bank,use_calibration,tsys=150.,path='/d
         for ipix in range(S.npix):
             S.roach[ipix].reduce_ps_spectrum(type=2,normal_ps=True,calibrate=True,tsys_spectrum=SCal.roach[ipix].tsys_spectrum)
     else:
-        # reduce all spectra - uncalibrated
+        # reduce all spectra - uncalibrated - using IFProc Tsys
+        calobsnum=I.calobsnum
+        ifproc_cal_file = lookup_ifproc_file(calobsnum,path=path+'ifproc/')
+        ICal = IFProcCal(ifproc_cal_file)
+        ICal.compute_tsys()
         for ipix in range(S.npix):
-            S.roach[ipix].reduce_ps_spectrum(type=2,normal_ps=True,calibrate=False,tsys_no_cal=tsys)
+            S.roach[ipix].reduce_ps_spectrum(type=2,normal_ps=True,calibrate=False,tsys_no_cal=ICal.tsys[ipix])
 
     return I,S
 
@@ -100,8 +104,12 @@ def read_obsnum_bs(obsnum,list_of_pixels,bank,use_calibration,tsys=150.,path='/d
 
     else:
         # reduce the two spectra - uncalibrated
-        S.roach[0].reduce_ps_spectrum(type=2,normal_ps=False,calibrate=False, tsys_no_cal=tsys)
-        S.roach[1].reduce_ps_spectrum(type=2,normal_ps=True,calibrate=False,tsys_no_cal=tsys)
+        calobsnum = I.calobsnum
+        ifproc_cal_file = lookup_ifproc_file(calobsnum,path=path+'ifproc/')
+        ICal = IFProcCal(ifproc_cal_file)
+        ICal.compute_tsys()
+        S.roach[0].reduce_ps_spectrum(type=2,normal_ps=False,calibrate=False, tsys_no_cal=ICal.tsys[0])
+        S.roach[1].reduce_ps_spectrum(type=2,normal_ps=True,calibrate=False,tsys_no_cal=ICal.tsys[1])
 
     return I,S
 
@@ -148,8 +156,12 @@ def read_obsnum_otf(obsnum,list_of_pixels,bank,use_calibration,tsys=150.,path='/
             S.roach[ipix].reduce_spectra(type=1,calibrate=True,tsys_spectrum=SCal.roach[ipix].tsys_spectrum)
     else:
         # reduce all spectra - uncalibrated
+        calobsnum = I.calobsnum
+        ifproc_cal_file = lookup_ifproc_file(calobsnum,path=path+'ifproc/')
+        ICal = IFProcCal(ifproc_cal_file)
+        ICal.compute_tsys()
         for ipix in range(S.npix):
-            S.roach[ipix].reduce_spectra(type=1,calibrate=False,tsys_no_cal=tsys)
+            S.roach[ipix].reduce_spectra(type=1,calibrate=False,tsys_no_cal=ICal.tsys[ipix])
 
     return I,S
 
@@ -195,7 +207,7 @@ def read_obsnum_otf_multiprocess(I,Ical,obsnum,list_of_pixels,bank,use_calibrati
     else:
         # reduce all spectra - uncalibrated
         for ipix in range(S.npix):
-            S.roach[ipix].reduce_spectra(type=1,calibrate=False,tsys_no_cal=tsys)
+            S.roach[ipix].reduce_spectra(type=1,calibrate=False,tsys_no_cal=Ical.tsys[ipix])
 
     return S
 

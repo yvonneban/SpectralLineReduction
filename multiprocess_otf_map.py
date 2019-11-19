@@ -20,6 +20,7 @@ from lmtslr.utils.reader import read_obsnum_otf_multiprocess, count_otf_spectra
 
 from lmtslr.utils.parser import HandleProcessOptions
 
+import time
 
 def multiprocess_otf_map(Opts, I, ICal):
 
@@ -128,6 +129,8 @@ def multiprocess_otf_map(Opts, I, ICal):
 
 def main(argv):
 
+    print(time.time(), time.clock())
+    
     Opts1 = HandleProcessOptions()
     Opts2 = HandleProcessOptions()
     Opts3 = HandleProcessOptions()
@@ -163,6 +166,7 @@ def main(argv):
     calobsnum = I.calobsnum
     ifproc_cal_file = lookup_ifproc_file(calobsnum,path=Opts1.data_path+'ifproc/')
     ICal = IFProcCal(ifproc_cal_file)
+    ICal.compute_tsys()
 
     print('Processing Roach Files in parallel')
     p1 = multiprocessing.Process(target=multiprocess_otf_map, args=(Opts1,I,ICal ))
@@ -179,6 +183,7 @@ def main(argv):
     p3.join()
     p4.join()
     print('DONE')
+    print(time.time(), time.clock())
     
 main(sys.argv[1:])
 
