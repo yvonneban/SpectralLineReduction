@@ -17,6 +17,7 @@ import netCDF4
 import os
 import fnmatch
 import ast
+from scipy.signal import detrend
 
 from lmtslr.ifproc.RSRUtilities import TempSens # move into utils folder?
 from lmtslr.utils.ifproc_file_utils import lookup_ifproc_file
@@ -34,6 +35,7 @@ def lookup_ifproc_file(obsnum,path='/data_lmt/ifproc/'):
             return lookup_ifproc_file(obsnum,path='/data_lmt/lmttpm/')
     return(filename)
 """
+
 class IFProcQuick():
     """ base class for reading quick information from IFPROC """
     def __init__(self, filename, instrument='Sequoia'):
@@ -98,7 +100,7 @@ class IFProc():
                     if True or self.receiver == 'B4r':
                         self.npix = 1
                 else:
-                    self.npix = 1
+                        self.npix = 1
                 print('from xlen npix =', self.npix)
                 self.tracking_beam = self.nc.variables['Header.'+self.receiver+'.BeamSelected'][0]
                 if self.tracking_beam != -1:
@@ -116,8 +118,8 @@ class IFProc():
             except Exception as e:
                 self.sideband[0] = 0
                 self.sideband[1] = 0
-                print e
-                print 'WARNING: NOT AN HETERODYNE FILE'
+                print(e)
+                print('WARNING: NOT AN HETERODYNE FILE')
 
             # Pointing Variables
             self.modrev = self.nc.variables['Header.PointModel.ModRev'][0]
@@ -177,8 +179,8 @@ class IFProc():
             self.velocity_system = self.nc.variables['Header.Source.VelSys'][0]
 
             try:
-                self.line_list = ast.literal_eval(str(netCDF4.chartostring(self.nc.variables['Header.Source.LineList'][:])).decode().strip())
-                self.baseline_list = ast.literal_eval(str(netCDF4.chartostring(self.nc.variables['Header.Source.BaselineList'][:])).decode().strip())
+                self.line_list = ast.literal_eval(str(netCDF4.chartostring(self.nc.variables['Header.Source.LineList'][:])).strip())
+                self.baseline_list = ast.literal_eval(str(netCDF4.chartostring(self.nc.variables['Header.Source.BaselineList'][:])).strip())
             except Exception as e:
                 self.line_list = []
                 self.baseline_list = []
@@ -310,7 +312,7 @@ class IFProcData(IFProc):
         if 'ifproc' in filename:
             self.level = self.nc.variables['Data.IfProc.BasebandLevel'][:]
         elif 'lmttpm' in filename:
-            self.level = self.nc.variables['Data.LmtTpm.Signal'][:]
+            self.level = detrend(self.nc.variables['Data.LmtTpm.Signal'][:], axis=0)
         else:
             self.level = np.zeros(0)
             
@@ -383,7 +385,7 @@ class IFProcCal(IFProc):
         if 'ifproc' in filename:
             self.level = self.nc.variables['Data.IfProc.BasebandLevel'][:]
         elif 'lmttpm' in filename:
-            self.level = self.nc.variables['Data.LmtTpm.Signal'][:]
+            self.level = detrend(self.nc.variables['Data.LmtTpm.Signal'][:], axis=0)
         else:
             self.level = np.zeros(0)
         self.nsamp = len(self.level)
