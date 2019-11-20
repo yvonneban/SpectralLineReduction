@@ -63,6 +63,8 @@ class IFProc():
                 self.calobsnum = self.nc.variables['Header.IfProc.CalObsNum'][0]
             elif 'lmttpm' in filename:
                 self.calobsnum = self.nc.variables['Header.LmtTpm.CalObsNum'][0]
+            else:
+                self.calobsnum = 0
                     
             self.obsnum = self.nc.variables['Header.Dcs.ObsNum'][0]
             self.utdate = self.nc.variables['Header.TimePlace.UTDate'][0]
@@ -93,8 +95,10 @@ class IFProc():
                     self.npix = len(self.nc.dimensions['Data.IfProc.BasebandLevel_xlen'])
                 elif 'lmttpm' in filename:
                     self.npix = len(self.nc.dimensions['Data.LmtTpm.Signal_xlen'])
-                    if self.receiver == 'B4r':
+                    if True or self.receiver == 'B4r':
                         self.npix = 1
+                else:
+                    self.npix = 1
                 print('from xlen npix =', self.npix)
                 self.tracking_beam = self.nc.variables['Header.'+self.receiver+'.BeamSelected'][0]
                 if self.tracking_beam != -1:
@@ -106,8 +110,14 @@ class IFProc():
 
             # sideband information
             self.sideband = np.zeros(2)
-            self.sideband[0] = self.nc.variables['Header.'+self.receiver+'.SideBand1Lo'][0]
-            self.sideband[1] = self.nc.variables['Header.'+self.receiver+'.SideBand1Lo'][1]
+            try:
+                self.sideband[0] = self.nc.variables['Header.'+self.receiver+'.SideBand1Lo'][0]
+                self.sideband[1] = self.nc.variables['Header.'+self.receiver+'.SideBand1Lo'][1]
+            except Exception as e:
+                self.sideband[0] = 0
+                self.sideband[1] = 0
+                print e
+                print 'WARNING: NOT AN HETERODYNE FILE'
 
             # Pointing Variables
             self.modrev = self.nc.variables['Header.PointModel.ModRev'][0]
@@ -194,6 +204,8 @@ class IFProc():
 
                 
             except Exception as e:
+                self.line_rest_frequency = 0
+                self.doppler_track = 0
                 print(e)
                 print('WARNING: NOT AN HETERODYNE FILE')
         else:
@@ -271,6 +283,9 @@ class IFProcData(IFProc):
         elif self.obspgm == 'Cal':
             print('WARNING: %d is a Cal observation'%(self.obsnum))
 
+        elif self.obspgm == 'On':
+            print('WARNING: %d is an On observation'%(self.obsnum))
+
         else:
             print('WARNING: ObsPgm type %s for Obsum %d is not identified'%(self.obspgm,self.obsnum))
 
@@ -296,6 +311,8 @@ class IFProcData(IFProc):
             self.level = self.nc.variables['Data.IfProc.BasebandLevel'][:]
         elif 'lmttpm' in filename:
             self.level = self.nc.variables['Data.LmtTpm.Signal'][:]
+        else:
+            self.level = np.zeros(0)
             
         self.nsamp = len(self.level)
 
@@ -367,6 +384,8 @@ class IFProcCal(IFProc):
             self.level = self.nc.variables['Data.IfProc.BasebandLevel'][:]
         elif 'lmttpm' in filename:
             self.level = self.nc.variables['Data.LmtTpm.Signal'][:]
+        else:
+            self.level = np.zeros(0)
         self.nsamp = len(self.level)
         self.tamb = 280.
         self.receiver = b''.join(self.nc.variables['Header.Dcs.Receiver'][:]).decode().strip()
