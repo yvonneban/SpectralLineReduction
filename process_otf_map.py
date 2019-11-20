@@ -18,9 +18,10 @@ from lmtslr.grid.grid import *
 from lmtslr.utils.reader import read_obsnum_otf, count_otf_spectra
 from lmtslr.utils.parser import HandleProcessOptions
 
+import time
 
 def main(argv):
-
+    print(time.time(), time.clock())
     Opts = HandleProcessOptions()
     Opts.parse_options(argv,'process_otf_map',1,True)
     
@@ -127,6 +128,7 @@ def main(argv):
 
     nc.close()        
     print('netCDF %s Done'%(Opts.output_file_name))
+    print(time.time(), time.clock())
 
 main(sys.argv[1:])
 

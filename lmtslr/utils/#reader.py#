@@ -192,7 +192,8 @@ def read_obsnum_otf(obsnum, list_of_pixels, bank,
 def read_obsnum_otf_multiprocess(ifproc, ifproc_cal, obsnum,
                                  list_of_pixels, bank, use_calibration, tsys=150.,
                                  path='/data_lmt/'):
-    """ Reads the spectral line data from WARES spectrometer for a particular obsnum.
+    """ 
+    Reads the spectral line data from WARES spectrometer for a particular obsnum.
     
     This is a useful utility function for use in line processing. It combines a number
     of tasks that are commonly done together to read a set of spectral line data.
@@ -207,8 +208,8 @@ def read_obsnum_otf_multiprocess(ifproc, ifproc_cal, obsnum,
     tsys (float): system temperature to use of use_calibration is False
     path (string): path to the top of the data_lmt directory (usually '/data_lmt/')
     Returns:
-    I: ifproc_data object with IF Processor parameters
-    S: spec_bank_data object with the actual spectral data
+    ifproc: ifproc_data object with IF Processor parameters
+    specbank: spec_bank_data object with the actual spectral data
     """
     # look up files to match pixel list
     roach_list = create_roach_list(list_of_pixels)
@@ -239,6 +240,7 @@ def read_obsnum_otf_multiprocess(ifproc, ifproc_cal, obsnum,
                                                tsys_no_cal=tsys)
 
     return specbank
+
 
 def count_otf_spectra(specbank, list_of_pixels):
     """ 
