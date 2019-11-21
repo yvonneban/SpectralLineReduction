@@ -1,0 +1,2 @@
+export CFITSIO_PATH=$HOME/cfitsio-3.47
+export NETCDF_PATH=/opt/local
