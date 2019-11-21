@@ -229,13 +229,13 @@ def read_obsnum_otf_multiprocess(ifproc, ifproc_cal, obsnum,
             print('WARNING: CAL MAY NOT BE CORRECT')
 
         # reduce all spectra - calibrated
-        for ipix in range(specbanknpix):
-            specbankroach[ipix].reduce_spectra(type=1, calibrate=True,
+        for ipix in range(specbank.npix):
+            specbank.roach[ipix].reduce_spectra(type=1, calibrate=True,
                                                tsys_spectrum=SCal.roach[ipix].tsys_spectrum)
     else:
         # reduce all spectra - uncalibrated
-        for ipix in range(specbanknpix):
-            specbankroach[ipix].reduce_spectra(type=1, calibrate=False,
+        for ipix in range(specbank.npix):
+            specbank.roach[ipix].reduce_spectra(type=1, calibrate=False,
                                                tsys_no_cal=tsys)
 
     return specbank
