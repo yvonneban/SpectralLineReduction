@@ -221,7 +221,7 @@ def read_obsnum_otf_multiprocess(ifproc, ifproc_cal, obsnum,
     # check whether to use calibration and open necessary file
     if use_calibration == True:
         specbankcal_flag = False
-        calobsnum = specbankcalobsnum
+        calobsnum = specbank.calobsnum
         cal_files, ncalfiles = lookup_roach_files(calobsnum,roach_list,path=path+'spectrometer/')
         SCal = SpecBankCal(cal_files, ifproc_cal, pixel_list=list_of_pixels)
         check_cal = SCal.test_cal(specbank)
