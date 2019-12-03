@@ -14,7 +14,7 @@ def lookup_ifproc_file(obsnum, path='/data_lmt/ifproc/'):
     if 'tel' not in path:
         paths += ['/data_lmt/tel/']
 
-    print paths
+    print(paths)
 
     for path in paths:
         filenames = glob.glob(os.path.join(path, '*_%06d_*.nc' % obsnum))

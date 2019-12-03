@@ -33,9 +33,13 @@ def read_obsnum_ps(obsnum, list_of_pixels, bank, use_calibration,
     files, nfiles = lookup_roach_files(obsnum, roach_list,
                                        path=os.path.join(path, 'spectrometer'))
     ifproc_file = lookup_ifproc_file(obsnum, path=os.path.join(path, 'ifproc'))
+    ifproc = IFProcData(ifproc_file)
+    ifproc_cal_file = lookup_ifproc_file(ifproc.calobsnum,
+                                         path=os.path.join(path, 'ifproc'))
+    ifproc_cal = IFProcCal(ifproc_cal_file)
+    ifproc_cal.compute_tsys()
 
     # create the spec_bank object.  This reads all the roaches in the list "files"
-    ifproc = IFProcData(ifproc_file)
     specbank = SpecBankData(files, ifproc, pixel_list=list_of_pixels,
                             bank=bank)
 
@@ -45,9 +49,6 @@ def read_obsnum_ps(obsnum, list_of_pixels, bank, use_calibration,
         calobsnum = specbank.calobsnum
         cal_files, ncalfiles = lookup_roach_files(calobsnum, roach_list,
                                                   path=os.path.join(path, 'spectrometer'))
-        ifproc_cal_file = lookup_ifproc_file(calobsnum,
-                                             path=os.path.join(path, 'ifproc'))
-        ifproc_cal = IFProcCal(ifproc_cal_file)
         specbank_cal = SpecBankCal(cal_files, ifproc_cal, pixel_list=list_of_pixels)
         check_cal = specbank_cal.test_cal(specbank)
         if check_cal > 0:
@@ -62,7 +63,7 @@ def read_obsnum_ps(obsnum, list_of_pixels, bank, use_calibration,
         # reduce all spectra - uncalibrated
         for ipix in range(specbank.npix):
             specbank.roach[ipix].reduce_ps_spectrum(type=2, normal_ps=True,
-                                                    calibrate=False, tsys_no_cal=tsys)
+                                                    calibrate=False, tsys_no_cal=ifproc_cal.tsys[list_of_pixels[ipix]])
 
     return ifproc, specbank
 
@@ -90,9 +91,12 @@ def read_obsnum_bs(obsnum, list_of_pixels, bank,
     files, nfiles = lookup_roach_files(obsnum, roach_list,
                                       path=path+'spectrometer')
     ifproc_file = lookup_ifproc_file(obsnum, path=path+'ifproc')
-
-    # create the spec_bank object.  This reads all the roaches in the list "files"
     ifproc = IFProcData(ifproc_file)
+    ifproc_cal_file = lookup_ifproc_file(ifproc.calobsnum, path=path+'ifproc')
+    ifproc_cal = IFProcCal(ifproc_cal_file)
+    ifproc_cal.compute_tsys()
+    
+    # create the spec_bank object.  This reads all the roaches in the list "files"
     specbank = SpecBankData(files, ifproc, pixel_list=list_of_pixels,
                             bank=bank)
 
@@ -102,8 +106,6 @@ def read_obsnum_bs(obsnum, list_of_pixels, bank,
         calobsnum = specbank.calobsnum
         cal_files, ncalfiles = lookup_roach_files(calobsnum, roach_list,
                                                   path=path+'spectrometer')
-        ifproc_cal_file = lookup_ifproc_file(calobsnum, path=path+'ifproc')
-        ifproc_cal = IFProcCal(ifproc_cal_file)
         specbank_cal = SpecBankCal(cal_files, ifproc_cal,
                                    pixel_list=list_of_pixels)
         check_cal = specbank_cal.test_cal(specbank)
@@ -122,11 +124,11 @@ def read_obsnum_bs(obsnum, list_of_pixels, bank,
     else:
         # reduce the two spectra - uncalibrated
         specbank.roach[0].reduce_ps_spectrum(type=2, normal_ps=False,
-                                             calibrate=False, tsys_no_cal=tsys)
+                                             calibrate=False, tsys_no_cal=ifproc_cal.tsys[list_of_pixels[0]])
         specbank.roach[1].reduce_ps_spectrum(type=2,
                                              normal_ps=True,
                                              calibrate=False,
-                                             tsys_no_cal=tsys)
+                                             tsys_no_cal=ifproc_cal.tsys[list_of_pixels[1]])
 
     return ifproc, specbank
 
@@ -155,9 +157,13 @@ def read_obsnum_otf(obsnum, list_of_pixels, bank,
                                        path=path+'spectrometer')
     ifproc_file = lookup_ifproc_file(obsnum,
                                      path=path+'ifproc')
+    ifproc = IFProcData(ifproc_file)
+    
+    ifproc_cal_file = lookup_ifproc_file(ifproc.calobsnum, path=path+'ifproc')
+    ifproc_cal = IFProcCal(ifproc_cal_file)
+    ifproc_cal.compute_tsys()
 
     # create the spec_bank object.  This reads all the roaches in the list "files"
-    ifproc = IFProcData(ifproc_file)
     specbank = SpecBankData(files, ifproc,
                             pixel_list=list_of_pixels, bank=bank)
 
@@ -167,8 +173,6 @@ def read_obsnum_otf(obsnum, list_of_pixels, bank,
         calobsnum = specbank.calobsnum
         cal_files,ncalfiles = lookup_roach_files(calobsnum, roach_list,
                                                  path=path+'spectrometer')
-        ifproc_cal_file = lookup_ifproc_file(calobsnum, path=path+'ifproc')
-        ifproc_cal = IFProcCal(ifproc_cal_file)
         specbank_cal = SpecBankCal(cal_files, ifproc_cal,
                                    pixel_list=list_of_pixels)
         check_cal = specbank_cal.test_cal(specbank)
@@ -184,7 +188,7 @@ def read_obsnum_otf(obsnum, list_of_pixels, bank,
         for ipix in range(specbank.npix):
             specbank.roach[ipix].reduce_spectra(type=1,
                                                 calibrate=False,
-                                                tsys_no_cal=tsys)
+                                                tsys_no_cal=ifproc_cal.tsys[list_of_pixels[ipix]])
 
     return ifproc, specbank
 
@@ -221,7 +225,7 @@ def read_obsnum_otf_multiprocess(ifproc, ifproc_cal, obsnum,
     # check whether to use calibration and open necessary file
     if use_calibration == True:
         specbankcal_flag = False
-        calobsnum = specbankcalobsnum
+        calobsnum = specbank.calobsnum
         cal_files, ncalfiles = lookup_roach_files(calobsnum,roach_list,path=path+'spectrometer/')
         SCal = SpecBankCal(cal_files, ifproc_cal, pixel_list=list_of_pixels)
         check_cal = SCal.test_cal(specbank)
@@ -229,14 +233,14 @@ def read_obsnum_otf_multiprocess(ifproc, ifproc_cal, obsnum,
             print('WARNING: CAL MAY NOT BE CORRECT')
 
         # reduce all spectra - calibrated
-        for ipix in range(specbanknpix):
-            specbankroach[ipix].reduce_spectra(type=1, calibrate=True,
+        for ipix in range(specbank.npix):
+            specbank.roach[ipix].reduce_spectra(type=1, calibrate=True,
                                                tsys_spectrum=SCal.roach[ipix].tsys_spectrum)
     else:
         # reduce all spectra - uncalibrated
-        for ipix in range(specbanknpix):
-            specbankroach[ipix].reduce_spectra(type=1, calibrate=False,
-                                               tsys_no_cal=tsys)
+        for ipix in range(specbank.npix):
+            specbank.roach[ipix].reduce_spectra(type=1, calibrate=False,
+                                                tsys_no_cal=ifproc_cal.tsys[list_of_pixels[ipix]])
 
     return specbank
 

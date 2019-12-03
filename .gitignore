@@ -3,6 +3,8 @@
 *.py[co]
 *.egg
 *.egg-info
+*.o
+C/spec_driver_fits
 MANIFEST
 dist/
 build/

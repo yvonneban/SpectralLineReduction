@@ -63,13 +63,14 @@ int main(int argc, char *argv[])
 
   printf("5\n");
   initialize_cube(&C, n);
-  initialize_cube_axis(&C, Z_AXIS, S.CRVAL, S.CRPIX, S.CDELT, S.CTYPE, "km/s");
-  initialize_cube_axis(&C, X_AXIS, 0.0, (n[0]-1.)/2., OTF.cell_size, "X", "arcsec");
-  initialize_cube_axis(&C, Y_AXIS, 0.0, (n[1]-1.)/2., OTF.cell_size, "Y", "arcsec");
+  // note that we add one to crpix's per fits convention
+  initialize_cube_axis(&C, Z_AXIS, S.CRVAL, S.CRPIX+1., S.CDELT, S.CTYPE, "km/s");
+  initialize_cube_axis(&C, X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
+  initialize_cube_axis(&C, Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
 
   initialize_plane(&Weight, n);
-  initialize_plane_axis(&Weight, PLANE_X_AXIS, 0.0, (n[0]-1.)/2., OTF.cell_size, "X", "arcsec");
-  initialize_plane_axis(&Weight, PLANE_Y_AXIS, 0.0, (n[1]-1.)/2., OTF.cell_size, "Y", "arcsec");
+  initialize_plane_axis(&Weight, PLANE_X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
+  initialize_plane_axis(&Weight, PLANE_Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
   printf("6\n");
 
   free_spec_file(&S);
