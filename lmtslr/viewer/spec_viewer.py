@@ -360,7 +360,8 @@ class SpecCalViewer(SpecViewer):
             if l_fin > 0:
                 pl.plot(S.roach[ipix].tsys_spectrum)
                 pl.text(S.nchan/2,10,'%d %6.0fK'%(pixel_id,S.roach[ipix].tsys),horizontalalignment='center')
-                pl.axis([0,S.nchan,0,plot_scale*1.5])
+                if plot_scale != 0:
+                    pl.axis([0,S.nchan,0,plot_scale*1.5])
             else:
                 pl.text(0.1,0.5,'%d NaN'%(pixel_id))
         pl.suptitle('TSys: ObsNum %d\n%s %s GHz'%(S.obsnum,S.receiver,S.line_rest_frequency)) 
