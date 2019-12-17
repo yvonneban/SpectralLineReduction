@@ -13,18 +13,26 @@ import numpy as np
 class Grid():
     ''' grid object defines the geometry of the SEQUOIA array and provides methods to compute offsets
     '''
-    def __init__(self, spacing=27.9, rotation=46.0):
+    def __init__(self, rx="Sequoia", spacing=27.9, rotation=46.0):
         ''' constructor for grid object 
         input:
         spacing - spacing of beams in grid in arcsec
         rotation - rotation of array wrt telescope in degrees 
         '''
-        self.nhorns = 16
-        self.spacing = spacing
-        self.rotation = rotation/180.*np.pi
-        # these are the offsets in the grid ordered by pixel
-        self.RIGHT = np.array([-1.5, -1.5, -1.5, -1.5, -.5, -.5, -.5, -.5, .5, .5, .5, .5, 1.5, 1.5, 1.5, 1.5])
-        self.UP = np.array([1.5, .5, -.5, -1.5, 1.5, .5, -.5, -1.5, 1.5, .5, -.5, -1.5, 1.5, .5, -.5, -1.5])
+        if rx == "Msip1mm":
+            self.nhorns = 4
+            self.spacing = 0
+            self.rotation = 0
+            # these are the offsets in the grid ordered by pixel
+            self.RIGHT = np.array([0, 0, 0, 0])
+            self.UP = np.array([0, 0, 0, 0])
+        else:
+            self.nhorns = 16
+            self.spacing = spacing
+            self.rotation = rotation/180.*np.pi
+            # these are the offsets in the grid ordered by pixel
+            self.RIGHT = np.array([-1.5, -1.5, -1.5, -1.5, -.5, -.5, -.5, -.5, .5, .5, .5, .5, 1.5, 1.5, 1.5, 1.5])
+            self.UP = np.array([1.5, .5, -.5, -1.5, 1.5, .5, -.5, -1.5, 1.5, .5, -.5, -1.5, 1.5, .5, -.5, -1.5])
 
     def azel(self, elev, tracking_beam):
         ''' computes offsets of beams in az-el system with respect to position being tracked
