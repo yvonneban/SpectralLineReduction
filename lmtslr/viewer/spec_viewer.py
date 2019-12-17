@@ -8,7 +8,7 @@ changes:
 python 3
 """
 import matplotlib
-gui_env = ['Agg', 'TKAgg','GTKAgg','Qt4Agg','WXAgg']
+gui_env = ['TKAgg','Agg','GTKAgg','Qt4Agg','WXAgg']
 for gui in gui_env:
     try:
         print ("testing", gui)
@@ -177,6 +177,8 @@ class SpecBankViewer(SpecViewer):
             start = 0
         if stop > S.roach[index].nspec:
             stop = S.roach[index].nspec
+        if stop > len(S.roach[index].reduced_spectra):
+            stop = len(S.roach[index].reduced_spectra)
         r = range(start,stop)
         w = np.zeros((len(r),S.nchan))
         for i,ispec in enumerate(r):
@@ -196,8 +198,8 @@ class SpecBankViewer(SpecViewer):
             pixel_list identifies the beams to be plotted
             Note: you have to create the map data before running this.
         """
-        nx = (map_region[1]-map_region[0])/grid_spacing+1
-        ny = (map_region[3]-map_region[2])/grid_spacing+1
+        nx = int((map_region[1]-map_region[0])/grid_spacing+1)
+        ny = int((map_region[3]-map_region[2])/grid_spacing+1)
         xi = np.linspace(map_region[0],map_region[1],nx)
         yi = np.linspace(map_region[2],map_region[3],ny)
         zi_sum = np.zeros((nx,ny))
@@ -218,10 +220,10 @@ class SpecBankViewer(SpecViewer):
             pixel_list identifies the beams to be plotted
             Note: you have to create the map data before running this.
         """
-        g = grid()
+        g = Grid(S.receiver)
         gx,gy = g.azel(S.elev/180.*np.pi,S.tracking_beam)
-        nx = (map_region[1]-map_region[0])/grid_spacing+1
-        ny = (map_region[3]-map_region[2])/grid_spacing+1
+        nx = int((map_region[1]-map_region[0])/grid_spacing+1)
+        ny = int((map_region[3]-map_region[2])/grid_spacing+1)
         xi = np.linspace(map_region[0],map_region[1],nx)
         yi = np.linspace(map_region[2],map_region[3],ny)
         zi_sum = np.zeros((nx,ny))
