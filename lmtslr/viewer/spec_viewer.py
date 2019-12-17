@@ -251,8 +251,8 @@ class SpecBankViewer(SpecViewer):
             Note: you have to create the map data before running this.
         """
         index = S.find_map_pixel_index(pixel)
-        nx = (map_region[1]-map_region[0])/grid_spacing+1
-        ny = (map_region[3]-map_region[2])/grid_spacing+1
+        nx = int((map_region[1]-map_region[0])/grid_spacing+1)
+        ny = int((map_region[3]-map_region[2])/grid_spacing+1)
         xi = np.linspace(map_region[0],map_region[1],nx)
         yi = np.linspace(map_region[2],map_region[3],ny)
         zi = mlab.griddata(S.map_x[index],S.map_y[index],S.map_data[index],xi,yi,interp='linear')
