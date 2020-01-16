@@ -216,6 +216,61 @@ class IFProc():
     def close_nc(self):
         self.nc.close()
 
+    def process_chopped_signal(self, bb_level, chop, window=3, threshold=0.5):
+
+        npts = len(chop)
+        nchannels = np.shape(bb_level)[1]
+        # define the smoothing window
+        ww = 2*window+1
+
+        # create array of indices for main, ref, blank based on chop array
+        switch = np.cos(2.*chop/8000*2.*np.pi)
+
+        # find indices where cos of encoder value exceeds a threshold
+        midx = np.where(switch > threshold)[0]
+        ridx = np.where(switch <-threshold)[0]
+
+        # create arrays for main and ref's identified by indices
+        msig = np.zeros(npts)
+        rsig = np.zeros(npts)
+
+        # load arrays with 1 where indices for main and ref identified
+        msig[midx] = 1.
+        rsig[ridx] = 1.
+
+        result = np.zeros((npts,nchannels))
+
+        for i in range(nchannels):
+            channel_level = bb_level[:,i] # gets rid of "masked array
+
+            # create a rolling sum of the main points
+            msum = np.cumsum(np.insert(msig*channel_level,0,0))
+            mrollsum = msum[ww:]-msum[:-ww]
+
+            # to do this accurately we also need a rolling sum for normalization
+            mnorm = np.cumsum(np.insert(msig,0,0))
+            mrollnorm = mnorm[ww:]-mnorm[:-ww]
+            if not 0 in mrollnorm:
+                mrollsum /= mrollnorm
+
+            # same procedure for reference points
+            rsum = np.cumsum(np.insert(rsig*channel_level,0,0))
+            rrollsum = rsum[ww:]-rsum[:-ww]
+
+            # same normalization procedure for reference points
+            rnorm = np.cumsum(np.insert(rsig,0,0))
+            rrollnorm = rnorm[ww:]-rnorm[:-ww]
+            if not 0 in rrollnorm:
+                rrollsum /= rrollnorm
+
+            # now compute difference between main and ref for all points 
+            result[window:npts-window,i] = mrollsum - rrollsum
+            result[:window,i] = result[window,i]*np.ones(window)
+            result[npts-window:,i] = result[npts-window-1,i]*np.ones(window)
+
+        return(result)
+        
+
 class IFProcData(IFProc):
     """ reads an IFPROC data file, which is a time sequence of total power measurements """
     def __init__(self,filename,npix=16):
@@ -310,7 +365,12 @@ class IFProcData(IFProc):
             
         self.bufpos = self.nc.variables['Data.TelescopeBackend.BufPos'][:]
         if 'ifproc' in filename:
-            self.level = self.nc.variables['Data.IfProc.BasebandLevel'][:]
+            self.bb_level = self.nc.variables['Data.IfProc.BasebandLevel'][:]
+            try:
+                chop = self.nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
+                self.level = self.process_chopped_signal(self.bb_level,chop,window=3,threshold=0.5)
+            except:
+                self.level = self.bb_level
         elif 'lmttpm' in filename:
             self.level = detrend(self.nc.variables['Data.LmtTpm.Signal'][:], axis=0)
         else:
@@ -383,7 +443,12 @@ class IFProcCal(IFProc):
         self.parang = np.zeros(len(self.azmap))
         self.bufpos = self.nc.variables['Data.TelescopeBackend.BufPos'][:]
         if 'ifproc' in filename:
-            self.level = self.nc.variables['Data.IfProc.BasebandLevel'][:]
+            try:
+                chop = nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
+                bb_level = nc.variables['Data.IfProc.BasebandLevel'][:]
+                self.level = self.process_chopped_signal(bb_level,chop,window=3,threshold=0.5)
+            except:
+                self.level = self.nc.variables['Data.IfProc.BasebandLevel'][:]
         elif 'lmttpm' in filename:
             self.level = detrend(self.nc.variables['Data.LmtTpm.Signal'][:], axis=0)
         else:
