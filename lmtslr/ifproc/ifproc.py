@@ -216,7 +216,7 @@ class IFProc():
     def close_nc(self):
         self.nc.close()
 
-    def process_chopped_signal(self, bb_level, chop, window=3, threshold=0.5):
+    def process_chopped_signal(self, bb_level, chop, window=3, threshold=0.5, shift=0):
 
         npts = len(chop)
         nchannels = np.shape(bb_level)[1]
@@ -224,7 +224,8 @@ class IFProc():
         ww = 2*window+1
 
         # create array of indices for main, ref, blank based on chop array
-        switch = np.cos(2.*chop/8000*2.*np.pi)
+        print('chop shift', shift)
+        switch = np.cos(2.*(chop-shift)/8000*2.*np.pi)
 
         # find indices where cos of encoder value exceeds a threshold
         midx = np.where(switch > threshold)[0]
@@ -367,9 +368,17 @@ class IFProcData(IFProc):
         if 'ifproc' in filename:
             self.bb_level = self.nc.variables['Data.IfProc.BasebandLevel'][:]
             try:
+                print('get chop')
                 chop = self.nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
-                self.level = self.process_chopped_signal(self.bb_level,chop,window=3,threshold=0.5)
-            except:
+                chop_option = self.nc.variables['Header.Msip1mm.BeamChopperActState'][0]
+                if chop_option == 3:
+                    shift=0
+                else:
+                    shift=0
+                self.level = self.process_chopped_signal(self.bb_level,chop,window=3,threshold=0.5, shift=shift)
+            except Exception as e:
+                print(e)
+                print('no chop')
                 self.level = self.bb_level
         elif 'lmttpm' in filename:
             self.level = detrend(self.nc.variables['Data.LmtTpm.Signal'][:], axis=0)
@@ -443,12 +452,20 @@ class IFProcCal(IFProc):
         self.parang = np.zeros(len(self.azmap))
         self.bufpos = self.nc.variables['Data.TelescopeBackend.BufPos'][:]
         if 'ifproc' in filename:
+            self.bb_level = self.nc.variables['Data.IfProc.BasebandLevel'][:]
             try:
-                chop = nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
-                bb_level = nc.variables['Data.IfProc.BasebandLevel'][:]
-                self.level = self.process_chopped_signal(bb_level,chop,window=3,threshold=0.5)
-            except:
-                self.level = self.nc.variables['Data.IfProc.BasebandLevel'][:]
+                print('get chop cal')
+                chop = self.nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
+                chop_option = self.nc.variables['Header.Msip1mm.BeamChopperActState'][0]
+                if chop_option == 3:
+                    shift=1000
+                else:
+                    shift=0
+                self.level = self.process_chopped_signal(self.bb_level,chop,window=12,threshold=0.5, shift=shift)
+            except Exception as e:
+                print(e)
+                print('no chop cal')
+                self.level = self.bb_level
         elif 'lmttpm' in filename:
             self.level = detrend(self.nc.variables['Data.LmtTpm.Signal'][:], axis=0)
         else:
