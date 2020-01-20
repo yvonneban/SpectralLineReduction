@@ -18,6 +18,7 @@ import os
 import fnmatch
 import ast
 from scipy.signal import detrend
+from scipy import interpolate
 
 from lmtslr.ifproc.RSRUtilities import TempSens # move into utils folder?
 from lmtslr.utils.ifproc_file_utils import lookup_ifproc_file
@@ -216,61 +217,39 @@ class IFProc():
     def close_nc(self):
         self.nc.close()
 
-    def process_chopped_signal(self, bb_level, chop, window=3, threshold=0.5, shift=0):
-
+    def process_chopped_signal(self, bb_level, chop, window=12, harm=2):
         npts = len(chop)
         nchannels = np.shape(bb_level)[1]
-        # define the smoothing window
+
         ww = 2*window+1
 
-        # create array of indices for main, ref, blank based on chop array
-        print('chop shift', shift)
-        switch = np.cos(2.*(chop-shift)/8000*2.*np.pi)
+        # create array of second harmonic values
+        tcos = np.cos(harm*chop/8000*2.*np.pi)
+        tsin = np.sin(harm*chop/8000*2.*np.pi)
 
-        # find indices where cos of encoder value exceeds a threshold
-        midx = np.where(switch > threshold)[0]
-        ridx = np.where(switch <-threshold)[0]
-
-        # create arrays for main and ref's identified by indices
-        msig = np.zeros(npts)
-        rsig = np.zeros(npts)
-
-        # load arrays with 1 where indices for main and ref identified
-        msig[midx] = 1.
-        rsig[ridx] = 1.
-
-        result = np.zeros((npts,nchannels))
+        cresult = np.zeros((npts,nchannels))
+        sresult = np.zeros((npts,nchannels))
+        aresult = np.zeros((npts,nchannels))
+        presult = np.zeros((npts,nchannels))
 
         for i in range(nchannels):
-            channel_level = bb_level[:,i] # gets rid of "masked array
+            c_level = bb_level[:,i]*tcos
+            s_level = bb_level[:,i]*tsin
 
-            # create a rolling sum of the main points
-            msum = np.cumsum(np.insert(msig*channel_level,0,0))
-            mrollsum = msum[ww:]-msum[:-ww]
+            for j in range(window, npts-window):
+                cresult[j,i] = np.sum(c_level[j-window:j+window+1])
+                sresult[j,i] = np.sum(s_level[j-window:j+window+1])
 
-            # to do this accurately we also need a rolling sum for normalization
-            mnorm = np.cumsum(np.insert(msig,0,0))
-            mrollnorm = mnorm[ww:]-mnorm[:-ww]
-            if not 0 in mrollnorm:
-                mrollsum /= mrollnorm
+            cresult[:window,i] = cresult[window,i]*np.ones(window)
+            cresult[npts-window:,i] = cresult[npts-window-1,i]*np.ones(window)
+            sresult[:window,i] = sresult[window,i]*np.ones(window)
+            sresult[npts-window:,i] = sresult[npts-window-1,i]*np.ones(window)
 
-            # same procedure for reference points
-            rsum = np.cumsum(np.insert(rsig*channel_level,0,0))
-            rrollsum = rsum[ww:]-rsum[:-ww]
+            aresult[:,i] = 2/ww*np.sqrt(cresult[:,i]**2+sresult[:,i]**2)
+            presult[:,i] = np.arctan2(sresult[:,i],cresult[:,i])
 
-            # same normalization procedure for reference points
-            rnorm = np.cumsum(np.insert(rsig,0,0))
-            rrollnorm = rnorm[ww:]-rnorm[:-ww]
-            if not 0 in rrollnorm:
-                rrollsum /= rrollnorm
+        return(aresult, presult)
 
-            # now compute difference between main and ref for all points 
-            result[window:npts-window,i] = mrollsum - rrollsum
-            result[:window,i] = result[window,i]*np.ones(window)
-            result[npts-window:,i] = result[npts-window-1,i]*np.ones(window)
-
-        return(result)
-        
 
 class IFProcData(IFProc):
     """ reads an IFPROC data file, which is a time sequence of total power measurements """
@@ -372,13 +351,14 @@ class IFProcData(IFProc):
                 chop = self.nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
                 chop_option = self.nc.variables['Header.Msip1mm.BeamChopperActState'][0]
                 if chop_option == 3:
-                    shift=0
+                    print(' chopping')
+                    self.level, self.level_phase = self.process_chopped_signal(self.bb_level, chop)
                 else:
-                    shift=0
-                self.level = self.process_chopped_signal(self.bb_level,chop,window=3,threshold=0.5, shift=shift)
+                    print(' not chopping')
+                    self.level = self.bb_level
             except Exception as e:
                 print(e)
-                print('no chop')
+                print(' no chop')
                 self.level = self.bb_level
         elif 'lmttpm' in filename:
             self.level = detrend(self.nc.variables['Data.LmtTpm.Signal'][:], axis=0)
@@ -458,13 +438,14 @@ class IFProcCal(IFProc):
                 chop = self.nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
                 chop_option = self.nc.variables['Header.Msip1mm.BeamChopperActState'][0]
                 if chop_option == 3:
-                    shift=1000
+                    print(' chopping cal')
+                    self.level, self.level_phase = self.process_chopped_signal(self.bb_level, chop)
                 else:
-                    shift=0
-                self.level = self.process_chopped_signal(self.bb_level,chop,window=12,threshold=0.5, shift=shift)
+                    print(' not chopping cal')
+                    self.level = self.bb_level
             except Exception as e:
                 print(e)
-                print('no chop cal')
+                print(' no chop cal')
                 self.level = self.bb_level
         elif 'lmttpm' in filename:
             self.level = detrend(self.nc.variables['Data.LmtTpm.Signal'][:], axis=0)
