@@ -217,7 +217,7 @@ class IFProc():
     def close_nc(self):
         self.nc.close()
 
-    def process_chopped_signal(self, bb_level, chop, window=12, harm=2):
+    def process_chopped_signal(self, bb_level, chop, window=62, harm=2):
         npts = len(chop)
         nchannels = np.shape(bb_level)[1]
 
@@ -350,7 +350,7 @@ class IFProcData(IFProc):
                 print('get chop')
                 chop = self.nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
                 chop_option = self.nc.variables['Header.Msip1mm.BeamChopperActState'][0]
-                if chop_option == 3:
+                if chop_option == 8 or chop_option == 16:
                     print(' chopping')
                     self.level, self.level_phase = self.process_chopped_signal(self.bb_level, chop)
                 else:
@@ -437,7 +437,7 @@ class IFProcCal(IFProc):
                 print('get chop cal')
                 chop = self.nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
                 chop_option = self.nc.variables['Header.Msip1mm.BeamChopperActState'][0]
-                if chop_option == 3:
+                if chop_option == 8 or chop_option == 16:
                     print(' chopping cal')
                     self.level, self.level_phase = self.process_chopped_signal(self.bb_level, chop)
                 else:
