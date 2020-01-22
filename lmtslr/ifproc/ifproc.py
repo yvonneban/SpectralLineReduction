@@ -217,7 +217,69 @@ class IFProc():
     def close_nc(self):
         self.nc.close()
 
-    def process_chopped_signal(self, bb_level, chop, window=62, harm=2):
+    def process_chopped_signal(self, bb_level, chop, window=6, thresholds=[[15,45,181],[110,135]]):
+        '''
+        gated chopper signal processor
+        inputs:
+             bb_level is npts by nchannels 2D array with baseband if data samples
+             chop is chopper wheel position 0 to 8000 corresponds to 0 to 360 degrees
+             window defines smoothing window of 2*window + 1 points.  The total smoothing
+              window must span at least one chop cycle
+             thresholds are positions for including data points in the main and ref
+               thresholds[0] elements give main limits in degrees from 0 to 180
+                             data are included if between thresholds[0][0] and thresholds[0][1]
+                             OR if greater than thresholds[0][2]
+               thresholds[1] elements give reference limits
+                             data are included if between thresholds[1][0] and thresholds[1][1]
+        output:
+             result is a 2D array with npts samples to match input arrays and nchannels.
+        '''
+
+        npts = len(chop)
+        nchannels = np.shape(bb_level)[1]
+        # define the smoothing window
+        ww = 2*window+1
+
+        # create array of indices for main, ref, blank based on chop array
+        ang = (chop/8000*360)%180
+
+        # find indices where cos of encoder value are within a range
+        midx = np.where(np.logical_or(np.logical_and(ang > thresholds[0][0], ang < thresholds[0][1]),np.logical_and(ang>thresholds[0][2],ang<=180)))[0]
+        ridx = np.where(np.logical_and(ang > thresholds[1][0], ang < thresholds[1][1]))[0]
+
+        msig = np.zeros(npts)
+        msig[midx] = 1
+        rsig = np.zeros(npts)
+        rsig[ridx] = 1
+
+        result = np.zeros((npts,nchannels))
+
+        for i in range(nchannels):
+            channel_level = bb_level[:,i] # gets rid of "masked array
+
+            # create a rolling sum of the main points
+            msum = np.cumsum(np.insert(msig*channel_level,0,0))
+            mrollsum = msum[ww:]-msum[:-ww]
+
+            # to do this accurately we also need a rolling sum for normalization
+            mnorm = np.cumsum(np.insert(msig,0,0))
+            mrollnorm = mnorm[ww:]-mnorm[:-ww]
+
+            # same procedure for reference points
+            rsum = np.cumsum(np.insert(rsig*channel_level,0,0))
+            rrollsum = rsum[ww:]-rsum[:-ww]
+
+            # same normalization procedure for reference points
+            rnorm = np.cumsum(np.insert(rsig,0,0))
+            rrollnorm = rnorm[ww:]-rnorm[:-ww]
+
+            # now compute difference between main and ref for all points 
+            result[window:npts-window,i] = mrollsum/mrollnorm - rrollsum/rrollnorm
+            result[:window,i] = result[window,i]*np.ones(window)
+            result[npts-window:,i] = result[npts-window-1,i]*np.ones(window)
+        return(result)
+
+    def process_chopped_signal_f(self, bb_level, chop, window=62, harm=2):
         npts = len(chop)
         nchannels = np.shape(bb_level)[1]
 
@@ -352,7 +414,7 @@ class IFProcData(IFProc):
                 chop_option = self.nc.variables['Header.Msip1mm.BeamChopperActState'][0]
                 if chop_option == 8 or chop_option == 16:
                     print(' chopping')
-                    self.level, self.level_phase = self.process_chopped_signal(self.bb_level, chop)
+                    self.level = self.process_chopped_signal(self.bb_level, chop)
                 else:
                     print(' not chopping')
                     self.level = self.bb_level
@@ -439,7 +501,7 @@ class IFProcCal(IFProc):
                 chop_option = self.nc.variables['Header.Msip1mm.BeamChopperActState'][0]
                 if chop_option == 8 or chop_option == 16:
                     print(' chopping cal')
-                    self.level, self.level_phase = self.process_chopped_signal(self.bb_level, chop)
+                    self.level = self.process_chopped_signal(self.bb_level, chop)
                 else:
                     print(' not chopping cal')
                     self.level = self.bb_level
