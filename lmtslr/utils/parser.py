@@ -4,7 +4,11 @@ import getopt
 
 
 class HandleProcessOptions():
-    '''Class to handle parameters for the Pipeline'''
+    """
+    Class to handle parameters for the processing script.
+    Args:
+        none
+    """
     def __init__(self):
         # initialization
         self.data_path = '/data_lmt/'
@@ -23,6 +27,13 @@ class HandleProcessOptions():
         self.output_file_name = ''
         
     def read_config_file(self, filename):
+        """
+        Returns the options from the config file.
+        Args:
+            filename (str): name of config file
+        Returns:
+            s2 (list): list of options generated from config file
+        """
         fd = open(filename,'r')
         f = fd.readlines()
         s = ''
@@ -34,6 +45,17 @@ class HandleProcessOptions():
         return s2
         
     def parse_options(self, s, program, arglevel=0, print_options=False):
+        """
+        Sets options according to input arguments and returns the exit 
+            code.
+        Args:
+            s (str): arguments to script
+            program (script): program to return
+            arglevel (int): argument level (default is 0)
+            print_options (bool): option to print options
+        Returns:
+            result (int): exit code of setting options
+        """
         self.program = program
         self.arglevel = arglevel
         try:
@@ -106,6 +128,13 @@ class HandleProcessOptions():
         return result
 
     def decode_cal_string(self,s):
+        """
+        Sets the use_cal option according to input string.
+        Args:
+            s (str): string to set use_cal option
+        Returns:
+            none
+        """
         if s[0] == 't' or s[0] == 'T':
              self.use_cal = True
         elif s[0] == 'f' or s[0] == 'F':
@@ -115,6 +144,13 @@ class HandleProcessOptions():
             print('unknown option for cal')
             
     def print_options(self):
+        """
+        Prints the current options.
+        Args:
+            none
+        Returns:
+            none
+        """
         print('program %s options'%(self.program))
         print('data path        = ',self.data_path)
         print('obsnum           = ',self.obsnum)
@@ -132,8 +168,16 @@ class HandleProcessOptions():
         print(' ')
         
     def print_help(self):
+        """
+        Prints explanations of options.
+        Args:
+            none
+        Returns:
+            none
+        """
         print('program name = %s'%(self.program))
-        print('--config [-c]    : name of configuration file to set parameters')
+        print('--config [-c]    : name of configuration file to set \
+            parameters')
         print('--output [-o]    : name of output SpecFile')
         print('DATA SPECIFICATION')
         print('--path [-p]      : set data path')
@@ -150,12 +194,17 @@ class HandleProcessOptions():
         print('--b_order        : set polynomial baseline order')
         print('--b_regions      : enter list of lists for baseline regions')
         print('--l_regions      : enter list of lists for line fit regions')
-        print('--slice          : enter list to specify slice from spectrum for processing')
+        print('--slice          : enter list to specify slice from spectrum \
+            for processing')
         print(' ')
 
 
 class HandleViewSpecFileOptions():
-    '''Class to handle parameters for the Pipeline'''
+    """
+    Class to handle parameters for viewing the spec file.
+    Args:
+        none
+    """
     def __init__(self):
         # initialization
         self.input_file_name = ''
@@ -166,6 +215,13 @@ class HandleViewSpecFileOptions():
         self.plot_range = [-1.,1.]
         
     def read_config_file(self, filename):
+        """
+        Returns the options from the config file.
+        Args:
+            filename (str): name of config file
+        Returns:
+            s2 (list): list of options generated from config file
+        """
         fd = open(filename,'r')
         f = fd.readlines()
         s = ''
@@ -177,6 +233,17 @@ class HandleViewSpecFileOptions():
         return s2
         
     def parse_options(self, s, program, arglevel=0, print_options=False):
+        """
+        Sets options according to input arguments and returns the exit 
+            code.
+        Args:
+            s (str): arguments to script
+            program (script): program to return
+            arglevel (int): argument level (default is 0)
+            print_options (bool): option to print options
+        Returns:
+            result (int): exit code of setting options
+        """
         self.program = program
         self.arglevel = arglevel
         try:
@@ -223,6 +290,13 @@ class HandleViewSpecFileOptions():
         return result
 
     def print_options(self):
+        """
+        Prints the current options.
+        Args:
+            none
+        Returns:
+            none
+        """
         print('program %s options'%(self.program))
         print('input file       = ',self.input_file_name)
         if self.show_all_pixels:  
@@ -235,8 +309,16 @@ class HandleViewSpecFileOptions():
         print('plot range       = ',self.plot_range)
 
     def print_help(self):
+        """
+        Prints explanations of options.
+        Args:
+            none
+        Returns:
+            none
+        """
         print('program name = %s'%(self.program))
-        print('--config [-c]    : name of configuration file to set parameters')
+        print('--config [-c]    : name of configuration file to set \
+            parameters')
         print('--input [-i]     : set input file name')
         print('--pix_list       : enter list of pixels to be displayed')
         print('--show_pixel     : select specific pixel for display')
@@ -245,7 +327,11 @@ class HandleViewSpecFileOptions():
 
         
 class HandleGridOptions():
-    '''Class to handle parameters for the Pipeline'''
+    """
+    Class to handle parameters for running the gridding script.
+    Args:
+        none
+    """
     def __init__(self):
         # initialization
         self.program_path = './spec_driver_fits'
@@ -265,6 +351,13 @@ class HandleGridOptions():
         self.otf_filter_code = ['box', 'jinc', 'gauss']
 
     def read_config_file(self, filename):
+        """
+        Returns the options from the config file.
+        Args:
+            filename (str): name of config file
+        Returns:
+            s2 (list): list of options generated from config file
+        """
         fd = open(filename,'r')
         f = fd.readlines()
         s = ''
@@ -276,6 +369,17 @@ class HandleGridOptions():
         return s2
         
     def parse_options(self, s, program, arglevel=0, print_options=False):
+        """
+        Sets options according to input arguments and returns the exit 
+            code.
+        Args:
+            s (str): arguments to script
+            program (script): program to return
+            arglevel (int): argument level (default is 0)
+            print_options (bool): option to print options
+        Returns:
+            result (int): exit code of setting options
+        """
         self.program = program
         self.arglevel = arglevel
         try:
@@ -350,6 +454,13 @@ class HandleGridOptions():
         return result
 
     def print_options(self):
+        """
+        Prints the current options.
+        Args:
+            none
+        Returns:
+            none
+        """
         print('program %s options'%(self.program))
         print('program path     = ',self.program_path)
         print('input file name  = ',self.input_file_name)
@@ -369,6 +480,13 @@ class HandleGridOptions():
         print(' ')
 
     def print_help(self):
+        """
+        Prints explanations of options.
+        Args:
+            none
+        Returns:
+            none
+        """
         print('program %s options'%(self.program))
         print('--config [-c]      : configuration file')
         print('--program_path [-p]: full path name to grid program')
@@ -381,7 +499,8 @@ class HandleGridOptions():
         print('--x_extent         : x extent of cube')
         print('--y_extent         : y extent of cube')
         print('--otf_select       : filter code (0=box,1=jinc,2=gaussian)')
-        print('--rmax             : maximum radius of convolution (units lambda/D)')
+        print('--rmax             : maximum radius of convolution \
+            (units lambda/D)')
         print('--n_samples        : number of samples in convolution filter')
         print('--otf_a            : otf a parameter')
         print('--otf_b            : otf b parameter')
@@ -389,7 +508,11 @@ class HandleGridOptions():
         print(' ')
 
 class HandleViewCubeOptions():
-    '''Class to handle parameters for the Pipeline'''
+    """
+    Class to handle parameters for viewing the FITS cube.
+    Args:
+        none
+    """
     def __init__(self):
         # initialization
         self.input_file_name = ''
@@ -404,6 +527,13 @@ class HandleViewCubeOptions():
         self.interp = 'bilinear'
         
     def read_config_file(self, filename):
+        """
+        Returns the options from the config file.
+        Args:
+            filename (str): name of config file
+        Returns:
+            s2 (list): list of options generated from config file
+        """
         fd = open(filename,'r')
         f = fd.readlines()
         s = ''
@@ -415,6 +545,17 @@ class HandleViewCubeOptions():
         return s2
         
     def parse_options(self, s, program, arglevel=0, print_options=False):
+        """
+        Sets options according to input arguments and returns the exit 
+            code.
+        Args:
+            s (str): arguments to script
+            program (script): program to return
+            arglevel (int): argument level (default is 0)
+            print_options (bool): option to print options
+        Returns:
+            result (int): exit code of setting options
+        """
         self.program = program
         self.arglevel = arglevel
         try:
@@ -473,6 +614,13 @@ class HandleViewCubeOptions():
         return result
 
     def decode_plot_type(self,arg):
+        """
+        Sets the plot_type option according to input string.
+        Args:
+            arg (str): string to set plot_type option
+        Returns:
+            none
+        """
         if arg == 'TINT' or arg == 'tint':
             self.plot_type = 'TINT'
         elif arg == 'TMAX' or arg == 'tmax':
@@ -482,6 +630,13 @@ class HandleViewCubeOptions():
             self.plot_type = 'TMAX'
             
     def print_options(self):
+        """
+        Prints the current options.
+        Args:
+            none
+        Returns:
+            none
+        """
         print('program %s options'%(self.program))
         print('input file name  = ',self.input_file_name)
         print('velocity range   = ',self.v_range)
@@ -496,17 +651,31 @@ class HandleViewCubeOptions():
         print('')
         
     def print_help(self):
+        """
+        Prints explanations of options.
+        Args:
+            none
+        Returns:
+            none
+        """
         print('program %s options'%(self.program))
         print('--config [-c]    : name of configuration file to set parameters')
         print('--input          : input FITS file')
-        print('--v_range        : [vlo,vhi] is velocity range for integrated intensity (km/s)')
-        print('--v_scale        : scale factor for velocity [default=1000 to convert m/s to km/s]')
-        print('--location       : [dx,dy] is location for spectrum plot (offset in arcsec)')
-        print('--scale          : scale factor for position offset [default=1/3600 to convert arcsec to degrees]')
+        print('--v_range        : [vlo,vhi] is velocity range for integrated \
+            intensity (km/s)')
+        print('--v_scale        : scale factor for velocity [default=1000 to \
+            convert m/s to km/s]')
+        print('--location       : [dx,dy] is location for spectrum plot \
+            (offset in arcsec)')
+        print('--scale          : scale factor for position offset \
+            [default=1/3600 to convert arcsec to degrees]')
         print('--limits         : [xlo,xhi,ylo,yhi] limits for final map')
-        print('--tmax_range     : [data_lo,data_hi] data range for tmax image') 
-        print('--tint_range     : [data_lo,data_hi] data range for tint image') 
+        print('--tmax_range     : [data_lo,data_hi] data range for tmax \
+            image')
+        print('--tint_range     : [data_lo,data_hi] data range for tint \
+            image')
         print('--plot_type      : data to plot - valid options: TINT, TMAX')
-        print('--interpolation  : valid options: none, nearest, bilinear, bicubic. default=bilinear')
+        print('--interpolation  : valid options: none, nearest, bilinear, \
+            bicubic. default=bilinear')
         print(' ')
      

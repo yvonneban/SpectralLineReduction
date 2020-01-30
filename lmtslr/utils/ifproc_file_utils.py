@@ -3,8 +3,15 @@ import os
 import glob
 
 def lookup_ifproc_file(obsnum, path='/data_lmt/ifproc/'):
-    # glob is a wrapper around fnmatch and takes care of looping through
-    # directories already
+    """
+    Returns the path to the NetCDF data file for a given obsnum.
+    Args:
+        obsnum (int): observation number of target observation
+        path (str): path to the data directory (default is 
+            '/data_lmt/ifproc/')
+    Returns:
+        filename (str): path to NetCDF data file of target observation
+    """
     paths = [path]
 
     if 'ifproc' not in path:
