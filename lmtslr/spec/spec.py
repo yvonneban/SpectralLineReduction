@@ -469,7 +469,7 @@ class RoachSpec():
             self.pixel_id_1 = pixel_id_1
             self.obspgm = obspgm
             delta_v = np.abs(v[1] - v[0])
-            baseline, rms = parent.(spectrum, baseline_list, n_baseline_list, 
+            baseline, rms = parent.baseline(spectrum, baseline_list, n_baseline_list, 
                                     baseline_order)
             baselined_spectrum = spectrum - baseline
             self.v = v
