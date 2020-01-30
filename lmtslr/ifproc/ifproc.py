@@ -308,6 +308,7 @@ class IFProc():
         """
         self.nc.close()
 
+<<<<<<< HEAD
     def process_chopped_signal(self, bb_level, chop, window=6, 
                                thresholds=[[15,45,181],[110,135]]):
         """
@@ -347,6 +348,37 @@ class IFProc():
                                                     ang <= 180)))[0]
         ridx = np.where(np.logical_and(ang > thresholds[1][0], 
                                        ang < thresholds[1][1]))[0]
+=======
+    def process_chopped_signal(self, bb_level, chop, window=6, thresholds=[[15,45,181],[110,135]]):
+        '''
+        gated chopper signal processor
+        inputs:
+             bb_level is npts by nchannels 2D array with baseband if data samples
+             chop is chopper wheel position 0 to 8000 corresponds to 0 to 360 degrees
+             window defines smoothing window of 2*window + 1 points.  The total smoothing
+              window must span at least one chop cycle
+             thresholds are positions for including data points in the main and ref
+               thresholds[0] elements give main limits in degrees from 0 to 180
+                             data are included if between thresholds[0][0] and thresholds[0][1]
+                             OR if greater than thresholds[0][2]
+               thresholds[1] elements give reference limits
+                             data are included if between thresholds[1][0] and thresholds[1][1]
+        output:
+             result is a 2D array with npts samples to match input arrays and nchannels.
+        '''
+
+        npts = len(chop)
+        nchannels = np.shape(bb_level)[1]
+        # define the smoothing window
+        ww = 2*window+1
+
+        # create array of indices for main, ref, blank based on chop array
+        ang = (chop/8000*360)%180
+
+        # find indices where cos of encoder value are within a range
+        midx = np.where(np.logical_or(np.logical_and(ang > thresholds[0][0], ang < thresholds[0][1]),np.logical_and(ang>thresholds[0][2],ang<=180)))[0]
+        ridx = np.where(np.logical_and(ang > thresholds[1][0], ang < thresholds[1][1]))[0]
+>>>>>>> f13161f003f01c8a8e191eb96afb88b07958c95d
 
         msig = np.zeros(npts)
         msig[midx] = 1
@@ -359,6 +391,7 @@ class IFProc():
             channel_level = bb_level[:,i] # gets rid of "masked array
 
             # create a rolling sum of the main points
+<<<<<<< HEAD
             msum = np.cumsum(np.insert(msig * channel_level, 0, 0))
             mrollsum = msum[ww:] - msum[:-ww]
 
@@ -430,6 +463,59 @@ class IFProc():
 
             aresult[:,i] = 2 / ww * np.sqrt(cresult[:,i]**2 + sresult[:,i]**2)
             presult[:,i] = np.arctan2(sresult[:,i], cresult[:,i])
+=======
+            msum = np.cumsum(np.insert(msig*channel_level,0,0))
+            mrollsum = msum[ww:]-msum[:-ww]
+
+            # to do this accurately we also need a rolling sum for normalization
+            mnorm = np.cumsum(np.insert(msig,0,0))
+            mrollnorm = mnorm[ww:]-mnorm[:-ww]
+
+            # same procedure for reference points
+            rsum = np.cumsum(np.insert(rsig*channel_level,0,0))
+            rrollsum = rsum[ww:]-rsum[:-ww]
+
+            # same normalization procedure for reference points
+            rnorm = np.cumsum(np.insert(rsig,0,0))
+            rrollnorm = rnorm[ww:]-rnorm[:-ww]
+
+            # now compute difference between main and ref for all points 
+            result[window:npts-window,i] = mrollsum/mrollnorm - rrollsum/rrollnorm
+            result[:window,i] = result[window,i]*np.ones(window)
+            result[npts-window:,i] = result[npts-window-1,i]*np.ones(window)
+        return(result)
+
+    def process_chopped_signal_f(self, bb_level, chop, window=62, harm=2):
+        npts = len(chop)
+        nchannels = np.shape(bb_level)[1]
+
+        ww = 2*window+1
+
+        # create array of second harmonic values
+        tcos = np.cos(harm*chop/8000*2.*np.pi)
+        tsin = np.sin(harm*chop/8000*2.*np.pi)
+
+        cresult = np.zeros((npts,nchannels))
+        sresult = np.zeros((npts,nchannels))
+        aresult = np.zeros((npts,nchannels))
+        presult = np.zeros((npts,nchannels))
+
+        for i in range(nchannels):
+            c_level = bb_level[:,i]*tcos
+            s_level = bb_level[:,i]*tsin
+
+            for j in range(window, npts-window):
+                cresult[j,i] = np.sum(c_level[j-window:j+window+1])
+                sresult[j,i] = np.sum(s_level[j-window:j+window+1])
+
+            cresult[:window,i] = cresult[window,i]*np.ones(window)
+            cresult[npts-window:,i] = cresult[npts-window-1,i]*np.ones(window)
+            sresult[:window,i] = sresult[window,i]*np.ones(window)
+            sresult[npts-window:,i] = sresult[npts-window-1,i]*np.ones(window)
+
+            aresult[:,i] = 2/ww*np.sqrt(cresult[:,i]**2+sresult[:,i]**2)
+            presult[:,i] = np.arctan2(sresult[:,i],cresult[:,i])
+>>>>>>> f13161f003f01c8a8e191eb96afb88b07958c95d
 
         return(aresult, presult)
 
