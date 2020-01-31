@@ -347,7 +347,7 @@ class IFProc():
                                                     ang <= 180)))[0]
         ridx = np.where(np.logical_and(ang > thresholds[1][0], 
                                        ang < thresholds[1][1]))[0]
-=======
+
     def process_chopped_signal(self, bb_level, chop, window=6, thresholds=[[15,45,181],[110,135]]):
         '''
         gated chopper signal processor
@@ -377,7 +377,6 @@ class IFProc():
         # find indices where cos of encoder value are within a range
         midx = np.where(np.logical_or(np.logical_and(ang > thresholds[0][0], ang < thresholds[0][1]),np.logical_and(ang>thresholds[0][2],ang<=180)))[0]
         ridx = np.where(np.logical_and(ang > thresholds[1][0], ang < thresholds[1][1]))[0]
->>>>>>> f13161f003f01c8a8e191eb96afb88b07958c95d
 
         msig = np.zeros(npts)
         msig[midx] = 1
@@ -390,7 +389,7 @@ class IFProc():
             channel_level = bb_level[:,i] # gets rid of "masked array
 
             # create a rolling sum of the main points
-<<<<<<< HEAD
+
             msum = np.cumsum(np.insert(msig * channel_level, 0, 0))
             mrollsum = msum[ww:] - msum[:-ww]
 
@@ -462,7 +461,7 @@ class IFProc():
 
             aresult[:,i] = 2 / ww * np.sqrt(cresult[:,i]**2 + sresult[:,i]**2)
             presult[:,i] = np.arctan2(sresult[:,i], cresult[:,i])
-=======
+
             msum = np.cumsum(np.insert(msig*channel_level,0,0))
             mrollsum = msum[ww:]-msum[:-ww]
 
@@ -514,7 +513,6 @@ class IFProc():
 
             aresult[:,i] = 2/ww*np.sqrt(cresult[:,i]**2+sresult[:,i]**2)
             presult[:,i] = np.arctan2(sresult[:,i],cresult[:,i])
->>>>>>> f13161f003f01c8a8e191eb96afb88b07958c95d
 
         return(aresult, presult)
 
