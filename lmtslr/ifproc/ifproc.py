@@ -308,7 +308,6 @@ class IFProc():
         """
         self.nc.close()
 
-<<<<<<< HEAD
     def process_chopped_signal(self, bb_level, chop, window=6, 
                                thresholds=[[15,45,181],[110,135]]):
         """
