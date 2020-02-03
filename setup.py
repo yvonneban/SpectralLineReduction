@@ -11,7 +11,7 @@ setup(
     author = "Gopal Narayanan",
     author_email = "gopal@astro.umass.edu",
     packages = find_packages(),
-    scripts = ['grid_data.py', 'multiprocess_otf_map.py', 'process_map.py',
-               'process_otf_map.py', 'process_ps.py', 'view_cube.py',
-               'view_spec_file.py']
+    scripts = ['bin/grid_data.py', 'bin/multiprocess_otf_map.py', 'bin/process_map.py',
+               'bin/process_otf_map.py', 'bin/process_ps.py', 'bin/view_cube.py',
+               'bin/view_spec_file.py']
     )

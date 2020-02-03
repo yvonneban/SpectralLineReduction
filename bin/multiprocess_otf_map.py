@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 Creates a SpecFile from a single OTF mapping observation
 '''
@@ -7,6 +8,7 @@ import sys
 import numpy as np		
 import matplotlib.pyplot as pl
 import netCDF4			 
+import multiprocessing
 
 # Line Data Reduction Imports
 from lmtslr.spec.spec import *
@@ -15,16 +17,14 @@ from lmtslr.ifproc.ifproc import *
 from lmtslr.reduction.line_reduction import *
 from lmtslr.grid.grid import *
 
-from lmtslr.utils.reader import read_obsnum_otf, count_otf_spectra
+from lmtslr.utils.reader import read_obsnum_otf_multiprocess, count_otf_spectra
+
 from lmtslr.utils.parser import HandleProcessOptions
 
 import time
 
-def main(argv):
-    print(time.time(), time.clock())
-    Opts = HandleProcessOptions()
-    Opts.parse_options(argv,'process_otf_map',1,True)
-    
+def multiprocess_otf_map(Opts, I, ICal):
+
     # set up the grid geometry
     theGrid = Grid()
     
@@ -32,8 +32,7 @@ def main(argv):
     if os.path.isfile(Opts.output_file_name) == True:
         os.remove(Opts.output_file_name) 
 
-
-    I,S = read_obsnum_otf(Opts.obsnum,
+    S = read_obsnum_otf_multiprocess(I, ICal, Opts.obsnum,
                           Opts.pix_list,
                           Opts.bank,
                           Opts.use_cal,
@@ -128,7 +127,66 @@ def main(argv):
 
     nc.close()        
     print('netCDF %s Done'%(Opts.output_file_name))
-    print(time.time(), time.clock())
 
-main(sys.argv[1:])
+def main(argv):
+
+    print(time.time(), time.clock())
+    
+    Opts1 = HandleProcessOptions()
+    Opts2 = HandleProcessOptions()
+    Opts3 = HandleProcessOptions()
+    Opts4 = HandleProcessOptions()
+
+    Opts1.parse_options(argv,'multiprocess_otf_map 1',1,False)
+    Opts1.pix_list = [0,1,2,3]
+    output_file_name = Opts1.output_file_name + '_1.nc'
+    Opts1.output_file_name = output_file_name
+    Opts1.print_options()
+
+    Opts2.parse_options(argv,'multiprocess_otf_map 2',1,False)
+    Opts2.pix_list = [4,5,6,7]
+    output_file_name = Opts2.output_file_name + '_2.nc'
+    Opts2.output_file_name = output_file_name
+    Opts2.print_options()
+
+    Opts3.parse_options(argv,'multiprocess_otf_map 3',1,False)
+    Opts3.pix_list = [8,9,10,11]
+    output_file_name = Opts3.output_file_name + '_3.nc'
+    Opts3.output_file_name = output_file_name
+    Opts3.print_options()
+
+    Opts4.parse_options(argv,'multiprocess_otf_map 4',1,False)
+    Opts4.pix_list = [12,13,14,15]
+    output_file_name = Opts4.output_file_name + '_4.nc'
+    Opts4.output_file_name = output_file_name
+    Opts4.print_options()
+    
+    print('Reading IFProc Files')
+    ifproc_file = lookup_ifproc_file(Opts1.obsnum,path=Opts1.data_path+'ifproc/')
+    I = IFProcData(ifproc_file)
+    calobsnum = I.calobsnum
+    ifproc_cal_file = lookup_ifproc_file(calobsnum,path=Opts1.data_path+'ifproc/')
+    ICal = IFProcCal(ifproc_cal_file)
+    ICal.compute_tsys()
+
+    print('Processing Roach Files in parallel')
+    p1 = multiprocessing.Process(target=multiprocess_otf_map, args=(Opts1,I,ICal ))
+    p1.start()
+    p2 = multiprocessing.Process(target=multiprocess_otf_map, args=(Opts2,I,ICal ))
+    p2.start()
+    p3 = multiprocessing.Process(target=multiprocess_otf_map, args=(Opts3,I,ICal ))
+    p3.start()
+    p4 = multiprocessing.Process(target=multiprocess_otf_map, args=(Opts4,I,ICal ))
+    p4.start()
+
+    p1.join()
+    p2.join()
+    p3.join()
+    p4.join()
+    print('DONE')
+    print(time.time(), time.clock())
+    
+if __name__ == '__main__':
+    main(sys.argv[1:])
+
 
