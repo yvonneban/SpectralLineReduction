@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Reads a SpecFile and creates a data cube
 """
@@ -67,6 +68,6 @@ def main(argv):
     print('Exit Code: %d'%(exit_code))
 
 
-
-main(sys.argv[1:])
+if __name__ == '__main__':
+    main(sys.argv[1:])
 

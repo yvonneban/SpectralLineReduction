@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 Processes a set of PS spectra
 '''
@@ -55,4 +56,5 @@ def main(argv):
         pl.show()
 
 
-main(sys.argv[1:])
+if __name__ == '__main__':
+    main(sys.argv[1:])

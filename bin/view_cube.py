@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys
 import numpy as np
 import matplotlib.pyplot as pl
@@ -223,5 +224,5 @@ def main(argv):
         # here is the command to invert the x axis if it was not stored correctly in the first place.
         #ax.invert_xaxis()
 
-    
-main(sys.argv[1:])
+if __name__ == '__main__':    
+    main(sys.argv[1:])

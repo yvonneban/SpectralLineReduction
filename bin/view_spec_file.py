@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 Reads a SpecFile from a single OTF mapping observation and creates visualizations
 '''
@@ -30,5 +31,5 @@ def main(argv):
 
     SV.xy_position_plot()
 
-
-main(sys.argv[1:])
+if __name__ == '__main__':
+    main(sys.argv[1:])
