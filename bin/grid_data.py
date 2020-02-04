@@ -15,7 +15,8 @@ from lmtslr.ifproc.ifproc import *
 
 from lmtslr.reduction.line_reduction import *
 
-from lmtslr.utils.parser import HandleGridOptions
+#from lmtslr.utils.parser import HandleGridOptions
+from lmtslr.utils.argparser import HandleGridOptions
 
 
 def main(argv):
@@ -39,7 +40,7 @@ def main(argv):
                                        '-f',str(Opts.otf_select),
                                        '-l',str(Opts.resolution),
                                        '-c',str(Opts.cell),
-                                       '-u',Opts.pix_list,
+                                       '-u',str(Opts.pix_list),
                                        '-z',str(Opts.rms_cut),
                                        '-n',str(Opts.n_samples),
                                        '-r',str(Opts.rmax),

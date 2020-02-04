@@ -5,7 +5,8 @@ import matplotlib.pyplot as pl
 from astropy.io import fits
 import astropy.wcs as wcs
 
-from lmtslr.utils.parser import HandleViewCubeOptions
+#from lmtslr.utils.parser import HandleViewCubeOptions
+from lmtslr.utils.argparser import HandleViewCubeOptions
 
 def channel_range(h,vlo,vhi):
     ''' 

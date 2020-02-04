@@ -6,7 +6,8 @@ Reads a SpecFile from a single OTF mapping observation and creates visualization
 # Python Imports
 import sys
 import matplotlib.pyplot as pl
-from lmtslr.utils.parser import HandleViewSpecFileOptions
+#from lmtslr.utils.parser import HandleViewSpecFileOptions
+from lmtslr.utils.argparser import HandleViewSpecFileOptions
 from lmtslr.viewer.spec_file_viewer import SpecFileViewer
 
 def main(argv):
@@ -30,6 +31,8 @@ def main(argv):
         SV.pixel_mean_spectrum_plot(Opts.show_pixel, Opts.rms_cut)
 
     SV.xy_position_plot()
-
+    pl.ioff()
+    pl.show()
+    
 if __name__ == '__main__':
     main(sys.argv[1:])

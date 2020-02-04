@@ -17,19 +17,20 @@ from lmtslr.reduction.line_reduction import *
 from lmtslr.grid.grid import *
 
 from lmtslr.utils.reader import read_obsnum_otf, count_otf_spectra
-from lmtslr.utils.parser import HandleProcessOptions
+#from lmtslr.utils.parser import HandleProcessOptions
+from lmtslr.utils.argparser import HandleProcessOptions
 
 import time
 
 def main(argv):
     print(time.time(), time.clock())
     Opts = HandleProcessOptions()
-    Opts.parse_options(argv,'process_otf_map',1,True)
+    Opts.parse_options(argv, 'process_otf_map', 1, True)
     
     # set up the grid geometry
     theGrid = Grid()
     
-    # check to see whether output file exists and remove it if it does
+     # check to see whether output file exists and remove it if it does
     if os.path.isfile(Opts.output_file_name) == True:
         os.remove(Opts.output_file_name) 
 

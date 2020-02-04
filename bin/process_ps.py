@@ -18,7 +18,8 @@ from lmtslr.viewer.spec_viewer import *
 from lmtslr.reduction.line_reduction import *
 
 from lmtslr.utils.reader import read_obsnum_ps
-from lmtslr.utils.parser import HandleProcessOptions
+#from lmtslr.utils.parser import HandleProcessOptions
+from lmtslr.utils.argparser import HandleProcessOptions
 
 def main(argv):
     
