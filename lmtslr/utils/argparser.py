@@ -71,6 +71,10 @@ class HandleProcessOptions(HandleOptions):
                             help="enter list to specify slice from spectrum for processing")
 
         args = self.parser.parse_args(args)
+        if 'help' in args.__dict__:
+            self.parser.print_help()
+        if 'config' in args.__dict__:
+            self.read_config_file(args.config, otf_config_spec_text)
         for k, v in args.__dict__.items():
             if v is not None:
                 setattr(self, k, v)
@@ -82,10 +86,6 @@ class HandleProcessOptions(HandleOptions):
                 setattr(self, k, list(map(int, v.split(','))))
             if k in ('b_regions', 'l_regions', 'slice') and v is not None:
                 setattr(self, k, eval(v))
-        if args.help:
-            self.parser.print_help()
-        if args.config:
-            self.read_config_file(args.config, otf_config_spec_text)
         if args.path:
             self.data_path = args.path
             self.attrs.add('data_path')
@@ -123,9 +123,9 @@ class HandleViewSpecFileOptions(HandleOptions):
                                  help="set plot range for plots")
         
         args = self.parser.parse_args(args)
-        #if args.help:
-        #    self.parser.print_help()
-        if args.config:
+        if 'help' in args.__dict__:
+            self.parser.print_help()
+        if 'config' in args.__dict__:
             self.read_config_file(args.config, viewspec_config_spec_text)
         for k, v in args.__dict__.items():
             if v is not None:
@@ -179,9 +179,9 @@ class HandleViewCubeOptions(HandleOptions):
                                  help="interpolation scheme one of (none, nearest, bilinear, bicubic")
         
         args = self.parser.parse_args(args)
-        #if args.help:
-        #    self.parser.print_help()
-        if args.config:
+        if 'help' in args.__dict__:
+            self.parser.print_help()
+        if 'config' in args.__dict__:
             self.read_config_file(args.config, viewcube_config_spec_text)
         for k, v in args.__dict__.items():
             if v is not None:
@@ -249,8 +249,8 @@ class HandleGridOptions(HandleOptions):
                                  help="OTF C parameter")        
         
         args = self.parser.parse_args(args)
-        #if args.help:
-        #    self.parser.print_help()
+        if 'help' in args.__dict__:
+            self.parser.print_help()
         for k, v in args.__dict__.items():
             if v is not None:
                 setattr(self, k, v)
@@ -263,7 +263,7 @@ class HandleGridOptions(HandleOptions):
         if args.output:
             self.output_file_name = args.output
             self.attrs.add('output_file_name')
-        if args.config:
+        if 'config' in args.__dict__:
             self.read_config_file(args.config, grid_config_text)
         if hasattr(self, 'pix_list'):
             self.pix_list = '[' + ','.join(['%d' % d for d in self.pix_list]) + ']'
