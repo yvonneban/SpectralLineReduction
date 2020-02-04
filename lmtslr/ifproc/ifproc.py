@@ -19,6 +19,7 @@ import fnmatch
 import ast
 from scipy.signal import detrend
 from scipy import interpolate
+import traceback
 
 from lmtslr.ifproc.RSRUtilities import TempSens # move into utils folder?
 from lmtslr.utils.ifproc_file_utils import lookup_ifproc_file
@@ -308,45 +309,13 @@ class IFProc():
         """
         self.nc.close()
 
-    def process_chopped_signal(self, bb_level, chop, window=6, 
-                               thresholds=[[15,45,181],[110,135]]):
-        """
-        Gated chopper signal processor.
-        Args:
-            bb_level (array): npts by nchannels 2D array with baseband 
-                if data samples
-            chop (int): chopper wheel position from 0 to 8000 
-                corresponding to 0 to 360 degrees
-            window (int): defines smoothing window of 2*window + 1 
-                points. The total smoothing window must span at least 
-                one chop cycle.
-            thresholds (list): positions for including data points in 
-                the main and ref.
-                thresholds[0] elements give main limits in degrees from
-                    0 to 180. data are included if between 
-                    thresholds[0][0] and thresholds[0][1] OR if greater
-                    than thresholds[0][2].
-                thresholds[1] elements give reference limits. data are 
-                    included if between thresholds[1][0] and 
-                    thresholds[1][1].
-        Returns:
-            result (array): 2D array with npts samples to match input 
-                arrays and nchannels.
-        """
-        npts = len(chop)
-        nchannels = np.shape(bb_level)[1]
-        # define the smoothing window
-        ww = 2 * window + 1
+    def process_chopped_encoder(self, chop, thresholds=[[15,45,181],[110,135]]):
+        # create array of indices for main and ref based on chop array
+        ang = (chop/8000*360)%180
 
-        # create array of indices for main, ref, blank based on chop array
-        ang = (chop / 8000 * 360)%180
-
-        # find indices where cos of encoder value are within a range
-        midx = np.where(np.logical_or(np.logical_and(ang > thresholds[0][0], 
-            ang < thresholds[0][1]), np.logical_and(ang > thresholds[0][2], 
-                                                    ang <= 180)))[0]
-        ridx = np.where(np.logical_and(ang > thresholds[1][0], 
-                                       ang < thresholds[1][1]))[0]
+        midx = np.where(np.logical_or(np.logical_and(ang > thresholds[0][0], ang < thresholds[0][1]),np.logical_and(ang>thresholds[0][2],ang<=180)))[0]
+        ridx = np.where(np.logical_and(ang > thresholds[1][0], ang < thresholds[1][1]))[0]
+        return midx, ridx
 
     def process_chopped_signal(self, bb_level, chop, window=6, thresholds=[[15,45,181],[110,135]]):
         '''
@@ -366,17 +335,28 @@ class IFProc():
              result is a 2D array with npts samples to match input arrays and nchannels.
         '''
 
+        # look at the shape of the arrays to determine if super sampled and reshape
+        s1 = np.shape(bb_level)
+        s2 = np.shape(chop)
+        if len(s1) == 3 and len(s2) == 2:
+            if s1[0] != s2[0] or s1[1] != s2[1]:
+                return None
+            bb_level = bb_level.reshape(s1[0]*s1[1], s1[2])
+            chop = chop.reshape(s2[0]*s2[1])
+            super_sample = s1[1]
+            window = window*super_sample
+        else:
+            super_sample = 1
+
+
         npts = len(chop)
-        nchannels = np.shape(bb_level)[1]
+        nchannels = np.shape(bb_level)[-1]
+
         # define the smoothing window
         ww = 2*window+1
 
-        # create array of indices for main, ref, blank based on chop array
-        ang = (chop/8000*360)%180
-
-        # find indices where cos of encoder value are within a range
-        midx = np.where(np.logical_or(np.logical_and(ang > thresholds[0][0], ang < thresholds[0][1]),np.logical_and(ang>thresholds[0][2],ang<=180)))[0]
-        ridx = np.where(np.logical_and(ang > thresholds[1][0], ang < thresholds[1][1]))[0]
+        # find indices where encoder value are within a range
+        midx, ridx = self.process_chopped_encoder(chop, thresholds=thresholds)
 
         msig = np.zeros(npts)
         msig[midx] = 1
@@ -389,79 +369,6 @@ class IFProc():
             channel_level = bb_level[:,i] # gets rid of "masked array
 
             # create a rolling sum of the main points
-
-            msum = np.cumsum(np.insert(msig * channel_level, 0, 0))
-            mrollsum = msum[ww:] - msum[:-ww]
-
-            # to do this accurately we also need a rolling sum for \
-            # normalization
-            mnorm = np.cumsum(np.insert(msig, 0, 0))
-            mrollnorm = mnorm[ww:] - mnorm[:-ww]
-
-            # same procedure for reference points
-            rsum = np.cumsum(np.insert(rsig * channel_level, 0, 0))
-            rrollsum = rsum[ww:] - rsum[:-ww]
-
-            # same normalization procedure for reference points
-            rnorm = np.cumsum(np.insert(rsig, 0, 0))
-            rrollnorm = rnorm[ww:] - rnorm[:-ww]
-
-            # now compute difference between main and ref for all \
-            # points
-            result[window:npts - window, i] = mrollsum / mrollnorm - \
-                                              rrollsum / rrollnorm
-            result[:window, i] = result[window, i] * np.ones(window)
-            result[npts - window:, i] = result[npts - window - 1, i] * \
-                                        np.ones(window)
-        return(result)
-
-    def process_chopped_signal_f(self, bb_level, chop, window=62, harm=2):
-        """
-        Gated chopper signal processor.
-        Args:
-            bb_level (array): npts by nchannels 2D array with baseband 
-                if data samples
-            chop (int): chopper wheel position from 0 to 8000 
-                corresponding to 0 to 360 degrees
-            window (int): defines smoothing window of 2*window + 1 
-                points. The total smoothing window must span at least 
-                one chop cycle.
-            harm (int): number of harmonic
-        Returns:
-            aresult (array), presult (array): 
-        """
-        npts = len(chop)
-        nchannels = np.shape(bb_level)[1]
-
-        ww = 2 * window + 1
-
-        # create array of second harmonic values
-        tcos = np.cos(harm * chop / 8000 * 2 * np.pi)
-        tsin = np.sin(harm * chop / 8000 * 2 * np.pi)
-
-        cresult = np.zeros((npts, nchannels))
-        sresult = np.zeros((npts, nchannels))
-        aresult = np.zeros((npts, nchannels))
-        presult = np.zeros((npts, nchannels))
-
-        for i in range(nchannels):
-            c_level = bb_level[:,i] * tcos
-            s_level = bb_level[:,i] * tsin
-
-            for j in range(window, npts - window):
-                cresult[j,i] = np.sum(c_level[j - window : j + window + 1])
-                sresult[j,i] = np.sum(s_level[j - window : j + window + 1])
-
-            cresult[:window, i] = cresult[window, i] * np.ones(window)
-            cresult[npts - window :, i] = cresult[npts - window - 1, i] * \
-                                         np.ones(window)
-            sresult[:window, i] = sresult[window, i] * np.ones(window)
-            sresult[npts - window :, i] = sresult[npts - window - 1, i] * \
-                                          np.ones(window)
-
-            aresult[:,i] = 2 / ww * np.sqrt(cresult[:,i]**2 + sresult[:,i]**2)
-            presult[:,i] = np.arctan2(sresult[:,i], cresult[:,i])
-
             msum = np.cumsum(np.insert(msig*channel_level,0,0))
             mrollsum = msum[ww:]-msum[:-ww]
 
@@ -481,41 +388,14 @@ class IFProc():
             result[window:npts-window,i] = mrollsum/mrollnorm - rrollsum/rrollnorm
             result[:window,i] = result[window,i]*np.ones(window)
             result[npts-window:,i] = result[npts-window-1,i]*np.ones(window)
+
+        # average the arrays back down if super sampled
+        if super_sample > 1:
+            result = np.mean(result.reshape(-1, super_sample, nchannels), axis=1)
+            msig = np.mean(msig.reshape(-1, super_sample), axis=1)
+            rsig = np.mean(rsig.reshape(-1, super_sample), axis=1)
+
         return(result)
-
-    def process_chopped_signal_f(self, bb_level, chop, window=62, harm=2):
-        npts = len(chop)
-        nchannels = np.shape(bb_level)[1]
-
-        ww = 2*window+1
-
-        # create array of second harmonic values
-        tcos = np.cos(harm*chop/8000*2.*np.pi)
-        tsin = np.sin(harm*chop/8000*2.*np.pi)
-
-        cresult = np.zeros((npts,nchannels))
-        sresult = np.zeros((npts,nchannels))
-        aresult = np.zeros((npts,nchannels))
-        presult = np.zeros((npts,nchannels))
-
-        for i in range(nchannels):
-            c_level = bb_level[:,i]*tcos
-            s_level = bb_level[:,i]*tsin
-
-            for j in range(window, npts-window):
-                cresult[j,i] = np.sum(c_level[j-window:j+window+1])
-                sresult[j,i] = np.sum(s_level[j-window:j+window+1])
-
-            cresult[:window,i] = cresult[window,i]*np.ones(window)
-            cresult[npts-window:,i] = cresult[npts-window-1,i]*np.ones(window)
-            sresult[:window,i] = sresult[window,i]*np.ones(window)
-            sresult[npts-window:,i] = sresult[npts-window-1,i]*np.ones(window)
-
-            aresult[:,i] = 2/ww*np.sqrt(cresult[:,i]**2+sresult[:,i]**2)
-            presult[:,i] = np.arctan2(sresult[:,i],cresult[:,i])
-
-        return(aresult, presult)
-
 
 class IFProcData(IFProc):
     """
@@ -650,6 +530,7 @@ class IFProcData(IFProc):
                     self.level = self.bb_level
             except Exception as e:
                 print(e)
+                traceback.print_exc()
                 print(' no chop')
                 self.level = self.bb_level
         elif 'lmttpm' in filename:
@@ -779,6 +660,7 @@ class IFProcCal(IFProc):
                     self.level = self.bb_level
             except Exception as e:
                 print(e)
+                traceback.print_exc()
                 print(' no chop cal')
                 self.level = self.bb_level
         elif 'lmttpm' in filename:
