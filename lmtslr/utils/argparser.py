@@ -77,8 +77,6 @@ class HandleProcessOptions(HandleOptions):
         args = self.parser.parse_args(args)
         if 'help' in args.__dict__:
             self.parser.print_help()
-        if 'config' in args.__dict__:
-            self.read_config_file(args.config, otf_config_spec_text)
         for k, v in args.__dict__.items():
             if v is not None:
                 setattr(self, k, v)
@@ -96,6 +94,8 @@ class HandleProcessOptions(HandleOptions):
         if args.output:
             self.output_file_name = args.output
             self.attrs.add('output_file_name')
+        if 'config' in args.__dict__:
+            self.read_config_file(args.config, otf_config_spec_text)
         if print_options:
             self.print_all_options()
 
@@ -129,8 +129,6 @@ class HandleViewSpecFileOptions(HandleOptions):
         args = self.parser.parse_args(args)
         if 'help' in args.__dict__:
             self.parser.print_help()
-        if 'config' in args.__dict__:
-            self.read_config_file(args.config, viewspec_config_spec_text)
         for k, v in args.__dict__.items():
             if v is not None:
                 setattr(self, k, v)
@@ -143,7 +141,9 @@ class HandleViewSpecFileOptions(HandleOptions):
             self.show_all_pixels = False
         if args.input:
             self.input_file_name = args.input
-            self.attrs.add('input_file_name')            
+            self.attrs.add('input_file_name')
+        if 'config' in args.__dict__:
+            self.read_config_file(args.config, viewspec_config_spec_text)
         if print_options:
             self.print_all_options()
 
@@ -185,8 +185,6 @@ class HandleViewCubeOptions(HandleOptions):
         args = self.parser.parse_args(args)
         if 'help' in args.__dict__:
             self.parser.print_help()
-        if 'config' in args.__dict__:
-            self.read_config_file(args.config, viewcube_config_spec_text)
         for k, v in args.__dict__.items():
             if v is not None:
                 setattr(self, k, v)
@@ -196,7 +194,8 @@ class HandleViewCubeOptions(HandleOptions):
         if args.input:
             self.input_file_name = args.input
             self.attrs.add('input_file_name')
-        
+        if 'config' in args.__dict__:
+            self.read_config_file(args.config, viewcube_config_spec_text)
         if print_options:
             self.print_all_options()
     
