@@ -116,7 +116,7 @@ class HandleViewSpecFileOptions(HandleOptions):
                             help="Comma separated list of pixels")
         self.parser.add_argument("--show_all_pixels", dest="show_all_pixels",
                                  action="store_true",
-                                 default=False, help="Show all pixels")
+                                 default=True, help="Show all pixels")
         self.parser.add_argument("-p", "--show_pixel", dest="show_pixel",
                                  type=int,
                                  help="Show a particular pixel")
@@ -137,7 +137,7 @@ class HandleViewSpecFileOptions(HandleOptions):
                 setattr(self, k, list(map(int, v.split(','))))
             if k in ('plot_range') and v is not None:
                 setattr(self, k, list(map(float, v.split(','))))
-        if self.show_pixel is not None:
+        if hasattr(self, 'show_pixel') and self.show_pixel is not None:
             self.show_all_pixels = False
         if args.input:
             self.input_file_name = args.input

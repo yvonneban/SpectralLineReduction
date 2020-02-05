@@ -55,7 +55,7 @@ show_all_pixels = boolean(default=True)
 # list of pixels to process
 pix_list = int_list(min=1, max=32, default=list(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15))
 # show a particular pixel
-show_pixel = integer(min=0, max=31, default=10)
+show_pixel = integer(default=None)
 # rms cut off to use
 rms_cut = float(default=10000)
 # Y-range for plots
