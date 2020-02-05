@@ -24,7 +24,11 @@ class HandleOptions:
         if hasattr(self, 'input'):
             self.input_file_name = self.input
             self.attrs.add('input_file_name')            
-
+        if hasattr(self, 'b_regions'):
+            self.b_regions = eval(self.b_regions)
+        if hasattr(self, 'l_regions'):
+            self.l_regions = eval(self.l_regions)
+            
     def print_all_options(self):
         print('program %s options' % (self.program))
         for attr in self.attrs:

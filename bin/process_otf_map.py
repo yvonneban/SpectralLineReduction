@@ -26,7 +26,7 @@ def main(argv):
     print(time.time(), time.clock())
     Opts = HandleProcessOptions()
     Opts.parse_options(argv, 'process_otf_map', 1, True)
-    
+
     # set up the grid geometry
     theGrid = Grid()
     
