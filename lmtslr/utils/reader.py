@@ -109,10 +109,10 @@ def read_obsnum_bs(obsnum, list_of_pixels, bank,
     # look up files to match pixel list
     roach_list = create_roach_list(list_of_pixels)
     files, nfiles = lookup_roach_files(obsnum, roach_list,
-                                      path=path+'spectrometer')
-    ifproc_file = lookup_ifproc_file(obsnum, path=path+'ifproc')
+                                       path=os.path.join(path, 'spectrometer'))
+    ifproc_file = lookup_ifproc_file(obsnum, path=os.path.join(path, 'ifproc'))
     ifproc = IFProcData(ifproc_file)
-    ifproc_cal_file = lookup_ifproc_file(ifproc.calobsnum, path=path+'ifproc')
+    ifproc_cal_file = lookup_ifproc_file(ifproc.calobsnum, path=os.path.join(path, 'ifproc'))
     ifproc_cal = IFProcCal(ifproc_cal_file)
     ifproc_cal.compute_tsys()
     
@@ -126,7 +126,7 @@ def read_obsnum_bs(obsnum, list_of_pixels, bank,
         specbank.cal_flag = False
         calobsnum = specbank.calobsnum
         cal_files, ncalfiles = lookup_roach_files(calobsnum, roach_list,
-                                                  path=path+'spectrometer')
+                                                  path=os.path.join(path, 'spectrometer'))
         specbank_cal = SpecBankCal(cal_files, ifproc_cal,
                                    pixel_list=list_of_pixels)
         check_cal = specbank_cal.test_cal(specbank)
@@ -177,12 +177,12 @@ def read_obsnum_otf(obsnum, list_of_pixels, bank,
     # look up files to match pixel list
     roach_list = create_roach_list(list_of_pixels)
     files, nfiles = lookup_roach_files(obsnum, roach_list,
-                                       path=path+'spectrometer')
+                                       path=os.path.join(path, 'spectrometer'))
     ifproc_file = lookup_ifproc_file(obsnum,
-                                     path=path+'ifproc')
+                                     path=os.path.join(path, 'ifproc'))
     ifproc = IFProcData(ifproc_file)
     
-    ifproc_cal_file = lookup_ifproc_file(ifproc.calobsnum, path=path+'ifproc')
+    ifproc_cal_file = lookup_ifproc_file(ifproc.calobsnum, path=os.path.join(path, 'ifproc'))
     ifproc_cal = IFProcCal(ifproc_cal_file)
     ifproc_cal.compute_tsys()
 
@@ -196,7 +196,7 @@ def read_obsnum_otf(obsnum, list_of_pixels, bank,
         specbank.cal_flag = False
         calobsnum = specbank.calobsnum
         cal_files,ncalfiles = lookup_roach_files(calobsnum, roach_list,
-                                                 path=path+'spectrometer')
+                                                 path=os.path.join(path, 'spectrometer'))
         specbank_cal = SpecBankCal(cal_files, ifproc_cal,
                                    pixel_list=list_of_pixels)
         check_cal = specbank_cal.test_cal(specbank)
@@ -248,7 +248,7 @@ def read_obsnum_otf_multiprocess(ifproc, ifproc_cal, obsnum,
     # look up files to match pixel list
     roach_list = create_roach_list(list_of_pixels)
     files, nfiles = lookup_roach_files(obsnum, roach_list, 
-                                       path=path+'spectrometer/')
+                                       path=os.path.join(path, 'spectrometer/'))
 
     # create the spec_bank object.  This reads all the roaches in the \
     # list "files"
@@ -260,7 +260,7 @@ def read_obsnum_otf_multiprocess(ifproc, ifproc_cal, obsnum,
         specbankcal_flag = False
         calobsnum = specbank.calobsnum
         cal_files, ncalfiles = lookup_roach_files(calobsnum, roach_list, 
-                                                  path=path+'spectrometer/')
+                                                  path=os.path.join(path, 'spectrometer/'))
         SCal = SpecBankCal(cal_files, ifproc_cal, pixel_list=list_of_pixels)
         check_cal = SCal.test_cal(specbank)
         if check_cal > 0:
