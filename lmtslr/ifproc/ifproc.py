@@ -130,8 +130,12 @@ class IFProc():
                                                   '.NumPixels'][0])
                 print('from pixels npix =', self.npix)
                 if 'ifproc' in filename:
-                    self.npix = len(self.nc.dimensions[
-                        'Data.IfProc.BasebandLevel_xlen'])
+                    if 'Data.IfProc.BasebandLevel_ylen' in self.nc.dimensions:
+                        self.npix = len(self.nc.dimensions[
+                            'Data.IfProc.BasebandLevel_ylen'])
+                    else:
+                        self.npix = len(self.nc.dimensions[
+                            'Data.IfProc.BasebandLevel_xlen'])
                 elif 'lmttpm' in filename:
                     self.npix = len(self.nc.dimensions[
                         'Data.LmtTpm.Signal_xlen'])
@@ -317,7 +321,7 @@ class IFProc():
         ridx = np.where(np.logical_and(ang > thresholds[1][0], ang < thresholds[1][1]))[0]
         return midx, ridx
 
-    def process_chopped_signal(self, bb_level, chop, window=6, thresholds=[[15,45,181],[110,135]]):
+    def process_chopped_signal(self, bb_level, chop, chop_option, window=6, thresholds=[[15,45,181],[110,135]]):
         '''
         gated chopper signal processor
         inputs:
@@ -348,53 +352,56 @@ class IFProc():
         else:
             super_sample = 1
 
-
         npts = len(chop)
         nchannels = np.shape(bb_level)[-1]
 
-        # define the smoothing window
-        ww = 2*window+1
+        if chop_option == 8 or chop_option == 16:
+            print(' chopping cal')
+            
+            result = np.zeros((npts,nchannels))
+            
+            # define the smoothing window
+            ww = 2*window+1
 
-        # find indices where encoder value are within a range
-        midx, ridx = self.process_chopped_encoder(chop, thresholds=thresholds)
+            # find indices where encoder value are within a range
+            midx, ridx = self.process_chopped_encoder(chop, thresholds=thresholds)
 
-        msig = np.zeros(npts)
-        msig[midx] = 1
-        rsig = np.zeros(npts)
-        rsig[ridx] = 1
+            msig = np.zeros(npts)
+            msig[midx] = 1
+            rsig = np.zeros(npts)
+            rsig[ridx] = 1
 
-        result = np.zeros((npts,nchannels))
+            for i in range(nchannels):
+                channel_level = bb_level[:,i] # gets rid of "masked array
 
-        for i in range(nchannels):
-            channel_level = bb_level[:,i] # gets rid of "masked array
+                # create a rolling sum of the main points
+                msum = np.cumsum(np.insert(msig*channel_level,0,0))
+                mrollsum = msum[ww:]-msum[:-ww]
 
-            # create a rolling sum of the main points
-            msum = np.cumsum(np.insert(msig*channel_level,0,0))
-            mrollsum = msum[ww:]-msum[:-ww]
+                # to do this accurately we also need a rolling sum for normalization
+                mnorm = np.cumsum(np.insert(msig,0,0))
+                mrollnorm = mnorm[ww:]-mnorm[:-ww]
 
-            # to do this accurately we also need a rolling sum for normalization
-            mnorm = np.cumsum(np.insert(msig,0,0))
-            mrollnorm = mnorm[ww:]-mnorm[:-ww]
+                # same procedure for reference points
+                rsum = np.cumsum(np.insert(rsig*channel_level,0,0))
+                rrollsum = rsum[ww:]-rsum[:-ww]
 
-            # same procedure for reference points
-            rsum = np.cumsum(np.insert(rsig*channel_level,0,0))
-            rrollsum = rsum[ww:]-rsum[:-ww]
+                # same normalization procedure for reference points
+                rnorm = np.cumsum(np.insert(rsig,0,0))
+                rrollnorm = rnorm[ww:]-rnorm[:-ww]
 
-            # same normalization procedure for reference points
-            rnorm = np.cumsum(np.insert(rsig,0,0))
-            rrollnorm = rnorm[ww:]-rnorm[:-ww]
+                # now compute difference between main and ref for all points 
+                result[window:npts-window,i] = mrollsum/mrollnorm - rrollsum/rrollnorm
+                result[:window,i] = result[window,i]*np.ones(window)
+                result[npts-window:,i] = result[npts-window-1,i]*np.ones(window)
 
-            # now compute difference between main and ref for all points 
-            result[window:npts-window,i] = mrollsum/mrollnorm - rrollsum/rrollnorm
-            result[:window,i] = result[window,i]*np.ones(window)
-            result[npts-window:,i] = result[npts-window-1,i]*np.ones(window)
+        else:
+            print(' not chopping cal')
+            result = bb_level
 
         # average the arrays back down if super sampled
         if super_sample > 1:
             result = np.mean(result.reshape(-1, super_sample, nchannels), axis=1)
-            msig = np.mean(msig.reshape(-1, super_sample), axis=1)
-            rsig = np.mean(rsig.reshape(-1, super_sample), axis=1)
-
         return(result)
 
 class IFProcData(IFProc):
@@ -522,12 +529,7 @@ class IFProcData(IFProc):
                 print('get chop')
                 chop = self.nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
                 chop_option = self.nc.variables['Header.Msip1mm.BeamChopperActState'][0]
-                if chop_option == 8 or chop_option == 16:
-                    print(' chopping')
-                    self.level = self.process_chopped_signal(self.bb_level, chop)
-                else:
-                    print(' not chopping')
-                    self.level = self.bb_level
+                self.level = self.process_chopped_signal(self.bb_level, chop, chop_option)
             except Exception as e:
                 print(e)
                 traceback.print_exc()
@@ -652,12 +654,7 @@ class IFProcCal(IFProc):
                 print('get chop cal')
                 chop = self.nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
                 chop_option = self.nc.variables['Header.Msip1mm.BeamChopperActState'][0]
-                if chop_option == 8 or chop_option == 16:
-                    print(' chopping cal')
-                    self.level = self.process_chopped_signal(self.bb_level, chop)
-                else:
-                    print(' not chopping cal')
-                    self.level = self.bb_level
+                self.level = self.process_chopped_signal(self.bb_level, chop, chop_option)
             except Exception as e:
                 print(e)
                 traceback.print_exc()
