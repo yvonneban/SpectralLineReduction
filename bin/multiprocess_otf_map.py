@@ -19,7 +19,8 @@ from lmtslr.grid.grid import *
 
 from lmtslr.utils.reader import read_obsnum_otf_multiprocess, count_otf_spectra
 
-from lmtslr.utils.parser import HandleProcessOptions
+#from lmtslr.utils.parser import HandleProcessOptions
+from lmtslr.utils.argparser import HandleProcessOptions
 
 import time
 
