@@ -340,6 +340,9 @@ class IFProc():
         '''
 
         # look at the shape of the arrays to determine if super sampled and reshape
+        if chop_option == 8:
+            window = 2*window
+            
         s1 = np.shape(bb_level)
         s2 = np.shape(chop)
         if len(s1) == 3 and len(s2) == 2:
@@ -356,7 +359,7 @@ class IFProc():
         nchannels = np.shape(bb_level)[-1]
 
         if chop_option == 8 or chop_option == 16:
-            print(' chopping cal')
+            print(' chopping')
             
             result = np.zeros((npts,nchannels))
             
@@ -396,7 +399,7 @@ class IFProc():
                 result[npts-window:,i] = result[npts-window-1,i]*np.ones(window)
 
         else:
-            print(' not chopping cal')
+            print(' not chopping')
             result = bb_level
 
         # average the arrays back down if super sampled
@@ -523,13 +526,14 @@ class IFProcData(IFProc):
             self.parang = np.zeros(len(self.azmap))
             
         self.bufpos = self.nc.variables['Data.TelescopeBackend.BufPos'][:]
+        self.chop_option = 0
         if 'ifproc' in filename:
             self.bb_level = self.nc.variables['Data.IfProc.BasebandLevel'][:]
             try:
                 print('get chop')
-                chop = self.nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
-                chop_option = self.nc.variables['Header.Msip1mm.BeamChopperActState'][0]
-                self.level = self.process_chopped_signal(self.bb_level, chop, chop_option)
+                self.chop = self.nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
+                self.chop_option = self.nc.variables['Header.Msip1mm.BeamChopperActState'][0]
+                self.level = self.process_chopped_signal(self.bb_level, self.chop, self.chop_option)
             except Exception as e:
                 print(e)
                 traceback.print_exc()
@@ -648,13 +652,14 @@ class IFProcCal(IFProc):
         self.elmap = self.nc.variables['Data.TelescopeBackend.TelElMap'][:]
         self.parang = np.zeros(len(self.azmap))
         self.bufpos = self.nc.variables['Data.TelescopeBackend.BufPos'][:]
+        self.chop_option = 0
         if 'ifproc' in filename:
             self.bb_level = self.nc.variables['Data.IfProc.BasebandLevel'][:]
             try:
                 print('get chop cal')
-                chop = self.nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
-                chop_option = self.nc.variables['Header.Msip1mm.BeamChopperActState'][0]
-                self.level = self.process_chopped_signal(self.bb_level, chop, chop_option)
+                self.chop = self.nc.variables['Data.Msip1mm.BeamChopperActPos'][:]
+                self.chop_option = self.nc.variables['Header.Msip1mm.BeamChopperActState'][0]
+                self.level = self.process_chopped_signal(self.bb_level, self.chop, self.chop_option)
             except Exception as e:
                 print(e)
                 traceback.print_exc()
@@ -692,10 +697,19 @@ class IFProcCal(IFProc):
         hot_list = np.where(self.bufpos == 3)
         sky_list = np.where(self.bufpos == 2)
         self.calcons = np.zeros((self.npix, 2))
+        if self.chop_option == 8 or self.chop_option == 16:
+            bb_level = self.bb_level
+            if len(np.shape(bb_level)) == 3:
+                bb_level = np.mean(bb_level, axis=1)
         for ipix in range(self.npix):
-            self.calcons[ipix,0] = (np.median(self.level[hot_list, ipix]) - 
-                np.median(self.level[sky_list, ipix])) / self.tamb
-            self.calcons[ipix,1] = np.median(self.level[sky_list, ipix])
+            if self.chop_option == 8 or self.chop_option == 16:
+                self.calcons[ipix,0] = (np.median(bb_level[hot_list, ipix]) - 
+                                        np.median(bb_level[sky_list, ipix])) / self.tamb
+                self.calcons[ipix,1] = np.median(bb_level[sky_list, ipix])
+            else:
+                self.calcons[ipix,0] = (np.median(self.level[hot_list, ipix]) - 
+                                        np.median(self.level[sky_list, ipix])) / self.tamb
+                self.calcons[ipix,1] = np.median(self.level[sky_list, ipix])
 
     def compute_tsys(self):
         """
@@ -708,9 +722,27 @@ class IFProcCal(IFProc):
         hot_list = np.where(self.bufpos == 3)
         sky_list = np.where(self.bufpos == 2)
         self.tsys = np.zeros((self.npix))
+        if self.chop_option == 8 or self.chop_option == 16:
+            bb_level = self.bb_level
+            chop = self.chop
+            if len(np.shape(bb_level)) == 3:
+                bb_level = np.mean(bb_level, axis=1)
+            if len(np.shape(chop)) == 2:
+                chop = np.mean(chop.reshape(-1, np.shape(chop)[1]), axis=1)
+            chop_load = chop[hot_list]
+            midx, ridx = self.process_chopped_encoder(chop_load)
         for ipix in range(self.npix):
-            vsky = np.median(self.level[sky_list, ipix])
-            vhot = np.median(self.level[hot_list, ipix])
-            vzero = self.blank_level
-            self.tsys[ipix] = self.tamb * (vsky - vzero) / (vhot - vsky)
+            if self.chop_option == 8 or self.chop_option == 16:
+                level = bb_level[:,ipix]
+                level_load = level[hot_list]
+                yhot = level_load[midx]
+                vhot = np.median(yhot)
+                vsky = np.median(level[sky_list])
+                vzero = self.blank_level
+                self.tsys[ipix] = self.tamb * (vsky - vzero) / (vhot - vsky)
+            else:
+                vsky = np.median(self.level[sky_list, ipix])
+                vhot = np.median(self.level[hot_list, ipix])
+                vzero = self.blank_level
+                self.tsys[ipix] = self.tamb * (vsky - vzero) / (vhot - vsky)
         
