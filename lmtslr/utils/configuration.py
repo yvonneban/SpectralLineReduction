@@ -16,9 +16,7 @@ path = string(max=100, default='/data_lmt')
 # output filename
 output = string(max=100, default='./output.nc')
 # If reducing single Obsnum, the integer Observation number
-obsnum = integer(1, 100000, default=85886)
-# when there is a list of ObsNums to process
-obs_list = int_list(min=1, max=100, default=list(85886,))
+obsnum = integer(1, 100000)
 
 [spectra]
 # spectral bank for processing

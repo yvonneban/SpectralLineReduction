@@ -51,8 +51,8 @@ class HandleProcessOptions(HandleOptions):
                             help="name of output SpecFile")
         self.parser.add_argument("-O", "--obsnum", dest="obsnum", type=int,
                             help="ObsNum of observation")
-        self.parser.add_argument("--obs_list", dest="obs_list", type=str,
-                        help="Comma separated list of ObsNums")
+        #self.parser.add_argument("--obs_list", dest="obs_list", type=str,
+        #                help="Comma separated list of ObsNums")
         self.parser.add_argument("-b", "--bank", dest="bank", type=int,
                             help="Spectral Bank for processing")
         self.parser.add_argument("--pix_list", dest="pix_list", type=str,
@@ -84,7 +84,7 @@ class HandleProcessOptions(HandleOptions):
             if k == 'x_axis' and v is not None:
                 if self.x_axis not in ['VLSR', 'VSKY', 'VBARY', 'VSRC', 'FLSR', 'FSKY', 'FBARY','FSRC']:
                     self.x_axis = None
-            if k in ('obs_list', 'pix_list') and v is not None:
+            if k in ('pix_list', ) and v is not None:
                 setattr(self, k, list(map(int, v.split(','))))
             if k in ('b_regions', 'l_regions', 'slice') and v is not None:
                 setattr(self, k, eval(v))
