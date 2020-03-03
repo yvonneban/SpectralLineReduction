@@ -26,12 +26,12 @@ class Grid():
                 in degrees 
         """
         if rx == "Msip1mm":
-            self.nhorns = 4
+            self.nhorns = 6
             self.spacing = 0
             self.rotation = 0
             # these are the offsets in the grid ordered by pixel
-            self.RIGHT = np.array([0, 0, 0, 0])
-            self.UP = np.array([0, 0, 0, 0])
+            self.RIGHT = np.array([0, 0, 0, 0, 0, 0])
+            self.UP = np.array([0, 0, 0, 0, 0, 0])
         else:
             self.nhorns = 16
             self.spacing = spacing
