@@ -316,21 +316,35 @@ class IFProc():
         """
         self.nc.close()
 
-    def process_chopped_encoder(self, chop, thresholds=[[15,45,181],[110,135]]):
+    def process_chopped_encoder(self, chop, chan,
+                                thresholds=[[[15,45,181],[110,135]],
+                                            [[15,45,181],[110,135]],
+                                            [[15,45,181],[110,135]],
+                                            [[15,45,181],[110,135]],
+                                            [[0,45,155],[65,135]],
+                                            [[0,45,155],[65,135]]]):
         # create array of indices for main and ref based on chop array
         ang = (chop/8000*360)%180
 
-        midx = np.where(np.logical_or(np.logical_and(ang > thresholds[0][0], ang < thresholds[0][1]),np.logical_and(ang>thresholds[0][2],ang<=180)))[0]
-        ridx = np.where(np.logical_and(ang > thresholds[1][0], ang < thresholds[1][1]))[0]
+        midx = np.where(np.logical_or(np.logical_and(ang > thresholds[chan][0][0], ang < thresholds[chan][0][1]),np.logical_and(ang>thresholds[chan][0][2],ang<=180)))[0]
+        ridx = np.where(np.logical_and(ang > thresholds[chan][1][0], ang < thresholds[chan][1][1]))[0]
         return midx, ridx
 
-    def process_chopped_signal(self, bb_level, chop, chop_option, window=6, thresholds=[[15,45,181],[110,135]]):
+    def process_chopped_signal(self, bb_level, chop, chop_option, ww=25,
+                               thresholds=[[[15,45,181],[110,135]],
+                                           [[15,45,181],[110,135]],
+                                           [[15,45,181],[110,135]],
+                                           [[15,45,181],[110,135]],
+                                           [[0,45,155],[65,135]],
+                                           [[0,45,155],[65,135]]]):
+
+
         '''
         gated chopper signal processor
         inputs:
              bb_level is npts by nchannels 2D array with baseband if data samples
              chop is chopper wheel position 0 to 8000 corresponds to 0 to 360 degrees
-             window defines smoothing window of 2*window + 1 points.  The total smoothing
+             ww defines smoothing window of ww points.  The total smoothing
               window must span at least one chop cycle
              thresholds are positions for including data points in the main and ref
                thresholds[0] elements give main limits in degrees from 0 to 180
@@ -343,9 +357,6 @@ class IFProc():
         '''
 
         # look at the shape of the arrays to determine if super sampled and reshape
-        if chop_option == 8:
-            window = 2*window
-            
         s1 = np.shape(bb_level)
         s2 = np.shape(chop)
         if len(s1) == 3 and len(s2) == 2:
@@ -354,10 +365,12 @@ class IFProc():
             bb_level = bb_level.reshape(s1[0]*s1[1], s1[2])
             chop = chop.reshape(s2[0]*s2[1])
             super_sample = s1[1]
-            window = window*super_sample
+            ww = ww*super_sample
         else:
             super_sample = 1
 
+        window = int(int(ww-1)/2)
+        print('window =', window)
         npts = len(chop)
         nchannels = np.shape(bb_level)[-1]
 
@@ -369,15 +382,15 @@ class IFProc():
             # define the smoothing window
             ww = 2*window+1
 
-            # find indices where encoder value are within a range
-            midx, ridx = self.process_chopped_encoder(chop, thresholds=thresholds)
-
-            msig = np.zeros(npts)
-            msig[midx] = 1
-            rsig = np.zeros(npts)
-            rsig[ridx] = 1
-
             for i in range(nchannels):
+                # find indices where encoder value are within a range
+                midx, ridx = self.process_chopped_encoder(chop, i, thresholds=thresholds)
+
+                msig = np.zeros(npts)
+                msig[midx] = 1
+                rsig = np.zeros(npts)
+                rsig[ridx] = 1
+
                 channel_level = bb_level[:,i] # gets rid of "masked array
 
                 # create a rolling sum of the main points
@@ -743,9 +756,9 @@ class IFProcCal(IFProc):
             if len(np.shape(chop)) == 2:
                 chop = np.mean(chop.reshape(-1, np.shape(chop)[1]), axis=1)
             chop_load = chop[hot_list]
-            midx, ridx = self.process_chopped_encoder(chop_load)
         for ipix in range(self.npix):
             if self.chop_option == 8 or self.chop_option == 16:
+                midx, ridx = self.process_chopped_encoder(chop_load, ipix)
                 level = bb_level[:,ipix]
                 level_load = level[hot_list]
                 yhot = level_load[midx]
