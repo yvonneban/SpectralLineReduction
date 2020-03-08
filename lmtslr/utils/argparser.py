@@ -62,6 +62,8 @@ class HandleOTFProcessOptions(HandleOptions):
                             help="Spectral Bank for processing")
         self.parser.add_argument("--pix_list", dest="pix_list", type=str,
                             help="Comma separated list of pixels")
+        self.parser.add_argument("--eliminate_list", dest="eliminate_list", type=str,
+                            help="Comma separated list of pixels")
         self.parser.add_argument("--use_cal", dest="use_cal", action="store_true",
                             default=False, help="Use Calibration scan")
         self.parser.add_argument("--tsys", dest="tsys", type=float,
@@ -89,7 +91,7 @@ class HandleOTFProcessOptions(HandleOptions):
             if k == 'x_axis' and v is not None:
                 if self.x_axis not in ['VLSR', 'VSKY', 'VBARY', 'VSRC', 'FLSR', 'FSKY', 'FBARY','FSRC']:
                     self.x_axis = None
-            if k in ('pix_list', ) and v is not None:
+            if k in ('pix_list', 'eliminate_list') and v is not None:
                 setattr(self, k, list(map(int, v.split(','))))
             if k in ('b_regions', 'l_regions', 'slice') and v is not None:
                 setattr(self, k, eval(v))
