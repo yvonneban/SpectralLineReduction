@@ -23,6 +23,8 @@ import traceback
 
 from lmtslr.ifproc.RSRUtilities import TempSens # move into utils folder?
 from lmtslr.utils.ifproc_file_utils import lookup_ifproc_file
+from lmtslr.utils.lmtheader import LMTHeader
+
 """
 def lookup_ifproc_file(obsnum,path='/data_lmt/ifproc/'):
     filename = ''
@@ -59,6 +61,8 @@ class IFProcQuick():
             self.obsnum = self.nc.variables['Header.Dcs.ObsNum'][0]
             self.receiver = b''.join(self.nc.variables['Header.Dcs.Receiver'
                                                       ][:]).decode().strip()
+            hdr = LMTHeader(self.nc.variables, self.nc.dimensions)
+            self.header = hdr.make_nominal_header()   
             self.nc.close()
         else:
             print('IFProcQuick: file \'%s\' is not found'%(self.filename))
