@@ -541,6 +541,8 @@ class SpecBank():
         # timing offsets for each roach board
         self.time_offset = time_offset
 
+        self.bank = bank
+        
         self.x_interpolation_function = interpolate.interp1d(self.ifproc.time,
             self.ifproc.azmap, bounds_error=False)
         self.y_interpolation_function = interpolate.interp1d(self.ifproc.time,
