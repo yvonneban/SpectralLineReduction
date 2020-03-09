@@ -85,6 +85,8 @@ class IFProc():
             self.nc = netCDF4.Dataset(self.filename)
 
             # header information
+            hdr = LMTHeader(self.nc.variables, self.nc.dimensions)
+            self.header = hdr.make_nominal_header()
             self.source = b''.join(self.nc.variables['Header.Source.SourceName'
                                                     ][:]).decode().strip()
             self.source_RA = self.nc.variables['Header.Source.Ra'][0]
