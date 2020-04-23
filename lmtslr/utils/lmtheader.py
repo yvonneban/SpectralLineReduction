@@ -8,12 +8,14 @@ class LMTHeader(OrderedNetCDFDict):
     """The most generic LMT Header class. This class is not usually
     instantiated by the user. It is part of the initialization of
     opening an LMT NetCDF file."""
-    def __init__(self, ncvariables=None, dimensions=None):
+    def __init__(self, ncvariables=None, dimensions=None,
+                 suppress_items=['M1', 'Tiltmeter_0_', 'Tiltmeter_1_', 'XmlParser']):
         OrderedNetCDFDict.__init__(self) #, init_val=(), strict=False)
         #OrderedDict.__init__(self, init_val=(), strict=False)
         #self.ncvariables = ncvariables
         self.make_header_keys(ncvariables)
         self.dimensions = dimensions
+        self.suppress_items = suppress_items
 
     def make_header_keys(self, ncvariables):
         heads = [name for name in ncvariables.keys() if name.find('Header') != -1]
@@ -29,9 +31,10 @@ class LMTHeader(OrderedNetCDFDict):
     def make_nominal_header(self):
         hdr = OrderedHeaderDict()
         for key, value in self.items():
-            hdr[key] = OrderedHeaderDict()
-            for k, v in value.items():
-                hdr[key][k] = self.get('%s.%s' % (key, k))
+            if key not in self.suppress_items:
+                hdr[key] = OrderedHeaderDict()
+                for k, v in value.items():
+                    hdr[key][k] = self.get('%s.%s' % (key, k))
         return hdr                
     
     def _pprint_subhead(self, k, v):
