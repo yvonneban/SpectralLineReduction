@@ -30,6 +30,7 @@ class HandleOptions:
             self.input_file_name = comma_separated(self.input)
             self.attrs.add('input_file_name')            
         if hasattr(self, 'b_regions'):
+            print(self.b_regions)
             self.b_regions = eval(self.b_regions)
         if hasattr(self, 'l_regions'):
             self.l_regions = eval(self.l_regions)
@@ -74,9 +75,9 @@ class HandleOTFProcessOptions(HandleOptions):
                             help="select spectral x axis. options one of VLSR, VSKY, VBARY, VSRC, FLSR, FSKY, FBARY, FSRC")
         self.parser.add_argument("--b_order", dest="b_order", type=int,
                             default=0, help="set polynomial baseline order")
-        self.parser.add_argument("--b_regions", dest="b_regions", type=str, default="[[]]",
+        self.parser.add_argument("--b_regions", dest="b_regions", type=str, default="[[],[]]",
                             help="enter list of lists for baseline regions")
-        self.parser.add_argument("--l_regions", dest="l_regions", type=str, default="[[]]",
+        self.parser.add_argument("--l_regions", dest="l_regions", type=str, default="[[],[]]",
                             help="enter list of lists for line fit regions")
         self.parser.add_argument("--slice", dest="slice", type=str,
                             help="enter list to specify slice from spectrum for processing")
