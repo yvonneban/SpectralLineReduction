@@ -40,6 +40,7 @@ def main(argv):
                            Opts.bank,
                            Opts.use_cal,
                            tsys=Opts.tsys,
+                           stype=Opts.stype,
                            path=Opts.data_path)
 
     specfile = SpecFile(I, S, Opts.pix_list)

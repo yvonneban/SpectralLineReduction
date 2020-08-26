@@ -25,6 +25,8 @@ bank = integer(min=0, max=3, default=0)
 pix_list = int_list(min=1, max=32, default=list(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15))
 # channels to eliminate
 eliminate_list = int_list(min=1, default=list(4096,))
+# spectral reduction type
+stype = integer(min=0, max=3, default=1)
 # If use_cal is True find and use the calibration scan
 use_cal = boolean(default=False)
 # if use_cal is False use this Tsys
@@ -58,6 +60,8 @@ bank = integer(min=0, max=3, default=0)
 pix_list = int_list(min=1, max=32, default=list(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15))
 # channels to eliminate
 eliminate_list = int_list(min=1, default=list(4096,))
+# spectral reduction type
+stype = integer(min=0, max=3, default=1)
 # If use_cal is True find and use the calibration scan
 use_cal = boolean(default=False)
 # if use_cal is False use this Tsys
