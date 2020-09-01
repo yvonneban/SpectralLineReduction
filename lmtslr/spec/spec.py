@@ -250,6 +250,8 @@ class RoachSpec():
                            average of all refs
                         2: use the average of refs which bracket the 
                            ons
+                        3: use weighted average of refs which bracket the
+                           ons
             calibrate (bool): option to calibrate ps_spectrum (default 
                 is False)
             tsys_spectrum (float): tsys value for calibration when 
@@ -279,7 +281,7 @@ class RoachSpec():
             else:
                 for i in self.ons:
                     spectra.append((self.raw_spec[i,:]))
-        else: # type == 2:
+        elif type == 2: # type == 2:
             if self.nrefs != 0:
                 self.compute_reference_spectra()
                 nbins = self.nrefs - 1
@@ -289,6 +291,23 @@ class RoachSpec():
                     for i in range(istart, istop + 1):
                         ref = (self.reference_spectra[ibin] + 
                                self.reference_spectra[ibin + 1]) / 2
+                        spectra.append((self.raw_spec[i,:] - ref) / ref)
+            else:
+                for i in self.ons:
+                    spectra.append((self.raw_spec[i,:]))
+        elif type == 3: # type == 3:
+            if self.nrefs != 0:
+                self.compute_reference_spectra()
+                nbins = self.nrefs - 1
+                for ibin in range(nbins):
+                    istart = self.on_ranges[ibin][0]
+                    istop = self.on_ranges[ibin][1]
+                    mapwidth = istop - istart
+                    for i in range(istart, istop + 1):
+                        wt1 = float(mapwidth - (i - istart))/float(mapwidth)
+                        wt2 = 1 - wt1
+                        ref = (wt1 * self.reference_spectra[ibin] + 
+                               wt2 * self.reference_spectra[ibin + 1])
                         spectra.append((self.raw_spec[i,:] - ref) / ref)
             else:
                 for i in self.ons:
