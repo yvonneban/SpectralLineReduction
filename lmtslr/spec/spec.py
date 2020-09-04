@@ -156,6 +156,18 @@ class RoachSpec():
             none
         """
         self.main_spectrum = np.mean(self.raw_spec[self.ons, :], axis=0)
+
+    def get_nearest_reference(self, index, left=True):
+        """
+        Given a dump index and if it is to the left of ONs (default)
+        or right of ONs returns the correct reference index
+        """
+        if left:
+            arr = [abs(index-r[1]) for r in self.ref_ranges]
+            return arr.index(min(arr))
+        else:
+            arr = [abs(index-r[0]) for r in self.ref_ranges]
+            return arr.index(min(arr))            
         
     def reduce_on_spectrum(self, calibrate=False, tsys_spectrum=0,
                            tsys_no_cal=1):
@@ -284,13 +296,16 @@ class RoachSpec():
         elif type == 2: # type == 2:
             if self.nrefs != 0:
                 self.compute_reference_spectra()
-                nbins = self.nrefs - 1
+                #nbins = self.nrefs - 1
+                nbins = self.nons
                 for ibin in range(nbins):
                     istart = self.on_ranges[ibin][0]
+                    start_ref_bin = self.get_nearest_reference(istart-1, left=True)
                     istop = self.on_ranges[ibin][1]
+                    stop_ref_bin = self.get_nearest_reference(istop+1, left=False)
                     for i in range(istart, istop + 1):
-                        ref = (self.reference_spectra[ibin] + 
-                               self.reference_spectra[ibin + 1]) / 2
+                        ref = (self.reference_spectra[start_ref_bin] + 
+                               self.reference_spectra[stop_ref_bin]) / 2
                         spectra.append((self.raw_spec[i,:] - ref) / ref)
             else:
                 for i in self.ons:
@@ -298,16 +313,19 @@ class RoachSpec():
         elif type == 3: # type == 3:
             if self.nrefs != 0:
                 self.compute_reference_spectra()
-                nbins = self.nrefs - 1
+                #nbins = self.nrefs - 1
+                nbins = self.nons
                 for ibin in range(nbins):
                     istart = self.on_ranges[ibin][0]
+                    start_ref_bin = self.get_nearest_reference(istart-1, left=True)                    
                     istop = self.on_ranges[ibin][1]
+                    stop_ref_bin = self.get_nearest_reference(istop+1, left=False)                    
                     mapwidth = istop - istart
                     for i in range(istart, istop + 1):
                         wt1 = float(mapwidth - (i - istart))/float(mapwidth)
                         wt2 = 1 - wt1
-                        ref = (wt1 * self.reference_spectra[ibin] + 
-                               wt2 * self.reference_spectra[ibin + 1])
+                        ref = (wt1 * self.reference_spectra[start_ref_bin] + 
+                               wt2 * self.reference_spectra[stop_ref_bin])
                         spectra.append((self.raw_spec[i,:] - ref) / ref)
             else:
                 for i in self.ons:
