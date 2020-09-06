@@ -130,7 +130,7 @@ grid_config_text = """
 # full path name to the gridding program
 program_path = string(max=500, default='/usr/local/env/specenv/bin/spec_driver_fits')
 # input NC filename
-input = string(max=20000, default='./input.nc')
+input = string(max=50000, default='./input.nc')
 # output FITS filename
 output = string(max=500, default='./output.fits')
 
