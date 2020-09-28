@@ -143,6 +143,8 @@ cell = float(min=0, default=7)
 pix_list = int_list(min=1, max=32, default=list(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15))
 # rms cut off to use
 rms_cut = float(default=10000)
+# noise_sigma - apply rms weighting if > 0.0
+noise_sigma = float(default=1.0)
 # x extent of cube in arcsec (cube will go to +/- x_extent)
 x_extent = float(min=1, default=300)
 # y extent of cube in arcsec (cube will go to +/- y_extent)

@@ -304,7 +304,10 @@ class HandleGridOptions(HandleOptions):
                             help="Comma separated list of pixels")        
         self.parser.add_argument("--rms_cut", dest="rms_cut",
                                  type=float,
-                                 help="rms threshold for data")        
+                                 help="rms threshold for data")
+        self.parser.add_argument("--noise_sigma", dest="noise_sigma",
+                                 type=float, default=1.0,
+                                 help="noise weighting - apply if > 0")                
         self.parser.add_argument("--x_extent", dest="x_extent", type=float,
                                  help="x extent of cube (arcsec) note: cube will go to +/- x_extent")
         self.parser.add_argument("--y_extent", dest="y_extent", type=float,

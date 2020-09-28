@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 			    x = S.XPos[i]-C.caxis[X_AXIS][ix+ii];
 			    y = S.YPos[i]-C.caxis[Y_AXIS][iy+jj];
 			    distance = sqrt(x*x+y*y);
-			    if (S.RMS[i] != 0.0) {
+			    if ((S.RMS[i] != 0.0) && (OTF.noise_sigma > 0.0)) {
 			      rmsweight = 1.0 /(S.RMS[i] * S.RMS[i]);
 			    } else {
 			      rmsweight = 1.0;
