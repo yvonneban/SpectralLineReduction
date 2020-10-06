@@ -41,6 +41,7 @@ def main(argv):
                            Opts.use_cal,
                            tsys=Opts.tsys,
                            stype=Opts.stype,
+                           use_otf_cal=Opts.use_otf_cal,
                            path=Opts.data_path)
 
     specfile = SpecFile(I, S, Opts.pix_list)

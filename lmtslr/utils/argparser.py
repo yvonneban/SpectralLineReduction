@@ -70,6 +70,8 @@ class HandleOTFProcessOptions(HandleOptions):
         self.parser.add_argument("--tsys", dest="tsys", type=float,
                             default=250.0,
                             help="If use_cal is False, value of Tsys to use")
+        self.parser.add_argument("--use_otf_cal", dest="use_otf_cal",
+                                 action="store_true", default=False, help="Use calibration within OTF scan")
         self.parser.add_argument("--stype", dest="stype", type=int,
                                  default=1, help="type of spectral line reduction; 0 - median; 1 - single ref spectra; 2 - bracketed ref")
         self.parser.add_argument("--x_axis", dest="x_axis",

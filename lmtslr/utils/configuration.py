@@ -31,6 +31,8 @@ stype = integer(min=0, max=3, default=1)
 use_cal = boolean(default=False)
 # if use_cal is False use this Tsys
 tsys = float(min=10, default=200)
+# use CAL within OTF scan
+use_otf_cal = boolean(default=False)
 # select spectral x axis
 x_axis = option('VLSR', 'VSKY', 'VBARY', 'VSRC', 'FLSR', 'FSKY', 'FBARY', 'FSRC', default='VLSR')
 # baseline order

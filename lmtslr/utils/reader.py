@@ -68,13 +68,13 @@ def read_obsnum_ps(obsnum, list_of_pixels, bank, use_calibration,
 
         # reduce all spectra - calibrated
         for ipix in range(specbank.npix):
-            specbank.roach[ipix].reduce_ps_spectrum(type=stype, normal_ps=True, 
+            specbank.roach[ipix].reduce_ps_spectrum(stype=stype, normal_ps=True, 
                 calibrate=True, 
                 tsys_spectrum=specbank_cal.roach[ipix].tsys_spectrum)
     else:
         # reduce all spectra - uncalibrated
         for ipix in range(specbank.npix):
-            specbank.roach[ipix].reduce_ps_spectrum(type=stype, normal_ps=True, 
+            specbank.roach[ipix].reduce_ps_spectrum(stype=stype, normal_ps=True, 
                 calibrate=False, 
                 tsys_no_cal=ifproc_cal.tsys[list_of_pixels[ipix]])
 
@@ -135,22 +135,23 @@ def read_obsnum_bs(obsnum, list_of_pixels, bank,
             print('WARNING: CAL MAY NOT BE CORRECT')
 
         # reduce the two spectra - calibrated 
-        specbank.roach[0].reduce_ps_spectrum(type=stype, normal_ps=False, 
+        specbank.roach[0].reduce_ps_spectrum(stype=stype, normal_ps=False, 
             calibrate=True, tsys_spectrum=specbank_cal.roach[0].tsys_spectrum)
-        specbank.roach[1].reduce_ps_spectrum(type=stype, normal_ps=True, 
+        specbank.roach[1].reduce_ps_spectrum(stype=stype, normal_ps=True, 
             calibrate=True, tsys_spectrum=specbank_cal.roach[1].tsys_spectrum)
 
     else:
         # reduce the two spectra - uncalibrated
-        specbank.roach[0].reduce_ps_spectrum(type=stype, normal_ps=False, 
+        specbank.roach[0].reduce_ps_spectrum(stype=stype, normal_ps=False, 
             calibrate=False, tsys_no_cal=ifproc_cal.tsys[list_of_pixels[0]])
-        specbank.roach[1].reduce_ps_spectrum(type=stype, normal_ps=True, 
+        specbank.roach[1].reduce_ps_spectrum(stype=stype, normal_ps=True, 
             calibrate=False, tsys_no_cal=ifproc_cal.tsys[list_of_pixels[1]])
 
     return ifproc, specbank
 
 def read_obsnum_otf(obsnum, list_of_pixels, bank,
                     use_calibration, tsys=150., stype=1,
+                    use_otf_cal=False,
                     path='/data_lmt/'):
     """
     Reads the spectral line data from WARES spectrometer for a 
@@ -207,12 +208,14 @@ def read_obsnum_otf(obsnum, list_of_pixels, bank,
 
         # reduce all spectra - calibrated
         for ipix in range(specbank.npix):
-            specbank.roach[ipix].reduce_spectra(type=stype, calibrate=True, 
-                tsys_spectrum=specbank_cal.roach[ipix].tsys_spectrum)
+            specbank.roach[ipix].reduce_spectra(stype=stype, calibrate=True, 
+                                                tsys_spectrum=specbank_cal.roach[ipix].tsys_spectrum,
+                                                use_otf_cal=use_otf_cal
+            )
     else:
         # reduce all spectra - uncalibrated
         for ipix in range(specbank.npix):
-            specbank.roach[ipix].reduce_spectra(type=stype, calibrate=False, 
+            specbank.roach[ipix].reduce_spectra(stype=stype, calibrate=False, 
                 tsys_no_cal=ifproc_cal.tsys[list_of_pixels[ipix]])
 
     return ifproc, specbank
@@ -270,12 +273,12 @@ def read_obsnum_otf_multiprocess(ifproc, ifproc_cal, obsnum,
 
         # reduce all spectra - calibrated
         for ipix in range(specbank.npix):
-            specbank.roach[ipix].reduce_spectra(type=stype, calibrate=True, 
+            specbank.roach[ipix].reduce_spectra(stype=stype, calibrate=True, 
                 tsys_spectrum=SCal.roach[ipix].tsys_spectrum)
     else:
         # reduce all spectra - uncalibrated
         for ipix in range(specbank.npix):
-            specbank.roach[ipix].reduce_spectra(type=stype, calibrate=False, 
+            specbank.roach[ipix].reduce_spectra(stype=stype, calibrate=False, 
                 tsys_no_cal=ifproc_cal.tsys[list_of_pixels[ipix]])
 
     return specbank

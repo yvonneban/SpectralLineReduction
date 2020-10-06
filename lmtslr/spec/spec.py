@@ -157,6 +157,22 @@ class RoachSpec():
         """
         self.main_spectrum = np.mean(self.raw_spec[self.ons, :], axis=0)
 
+    def compute_tsys_spectra(self, bdrop=100, edrop=100):
+        self.tsys_spectra = np.zeros((self.nhots, self.nchan))
+        for ihot in range(self.nhots):
+            hot_spectrum = np.median(self.raw_spec[self.hot_ranges[ihot][0]:self.hot_ranges[ihot][1], :], axis=0)
+            sky_spectrum = np.median(self.raw_spec[self.sky_ranges[ihot][0]:self.sky_ranges[ihot][1], :], axis=0)
+            tsys_spec = 280.0 * sky_spectrum/(hot_spectrum - sky_spectrum)
+            # find the index where tsys_spec is finite
+            indx_fin = np.where(np.isfinite(tsys_spec))
+            # compute tsys as mean of tsys_spec
+            tsys = np.mean(tsys_spec[indx_fin][bdrop:self.nchan-edrop])
+            # find index where tsys_spec is infinte
+            indx_inf = np.where(np.isinf(tsys_spec))
+            # replace with mean
+            tsys_spec[indx_inf] = tsys
+            self.tsys_spectra[ihot, :] = tsys_spec
+        
     def get_nearest_reference(self, index, left=True):
         """
         Given a dump index and if it is to the left of ONs (default)
@@ -168,12 +184,20 @@ class RoachSpec():
         else:
             arr = [abs(index-r[0]) for r in self.ref_ranges]
             return arr.index(min(arr))            
-        
+
+    def get_previous_hot(self, index):
+        """
+        Given a dump index finds the previous HOT
+        and returns the correct hot index
+        """
+        arr = [abs(index-r[1]) for r in self.hot_ranges]
+        return arr.index(min(arr))
+    
     def reduce_on_spectrum(self, calibrate=False, tsys_spectrum=0,
                            tsys_no_cal=1):
         """
         Creates a ON spectrum returned as self.on_spectrum. Reduction 
-        procedure depends on the type parameter.
+        procedure depends on the stype parameter.
         Args:
             calibrate (bool): True when we want to calibrate the 
                 ps_spectrum (default is False)
@@ -190,13 +214,13 @@ class RoachSpec():
         else:
             self.on_spectrum = self.on_spectrum * tsys_no_cal
 
-    def reduce_ps_spectrum(self, type=2, normal_ps=True, calibrate=False, 
+    def reduce_ps_spectrum(self, stype=2, normal_ps=True, calibrate=False, 
                            tsys_spectrum=0, tsys_no_cal=1):
         """
         Creates a PS spectrum returned as self.ps_spectrum. Reduction 
-        procedure depends on the type parameter.
+        procedure depends on the stype parameter.
         Args:
-            type (int): type of reduction to run (default is 2)
+            stype (int): type of reduction to run (default is 2)
                         0: not defined
                         1: compute average of all refs and mains and 
                            take the difference
@@ -214,7 +238,7 @@ class RoachSpec():
         Returns:
             none
         """
-        if type == 1:
+        if stype == 1:
             self.compute_main_spectrum()
             self.compute_reference_spectrum()
             if normal_ps == True:
@@ -250,13 +274,14 @@ class RoachSpec():
         else:
             self.ps_spectrum = self.ps_spectrum * tsys_no_cal
 
-    def reduce_spectra(self, type=0, calibrate=False,
-                       tsys_spectrum=0, tsys_no_cal=1):
+    def reduce_spectra(self, stype=0, calibrate=False,
+                       tsys_spectrum=0, tsys_no_cal=1,
+                       use_otf_cal=False):
         """
         Creates a list of all the "on" spectra in the file. The on 
         spectra are reduced according to the value of "type".
         Args:
-            type (int): type of reduction to run (default is 0)
+            stype (int): type of reduction to run (default is 0)
                         0: use the median spectrum for the whole thing
                         1: use a single reference spectra which is 
                            average of all refs
@@ -270,6 +295,8 @@ class RoachSpec():
                 calibrate=True
             tsys_no_cal (float): tsys value for calibration when 
                 calibrate=False
+            use_otf_cal (bool): option to use in-scan hot and sky to derive cals
+                (default is False)
         Returns:
             none
         """
@@ -278,12 +305,17 @@ class RoachSpec():
         if self.nrefs == 0:
             type = 0
 
-        if type == 0:
+        if use_otf_cal:
+            self.compute_tsys_spectra()
+        if stype == 0:
             self.compute_median_spectrum()
             for i in self.ons:
                 spectra.append((self.raw_spec[i,:] - self.median_spectrum[:]) 
                                 / self.median_spectrum[:])
-        elif type == 1:
+            #if use_otf_cal:
+            #    self.compute_tsys_spectrum()
+            #    self.reduced_spectra = np.array(spectra) * self.tsys_spectrum
+        elif stype == 1:
             if self.nrefs != 0:
                 self.compute_reference_spectrum()
                 for i in self.ons:
@@ -293,7 +325,10 @@ class RoachSpec():
             else:
                 for i in self.ons:
                     spectra.append((self.raw_spec[i,:]))
-        elif type == 2: # type == 2:
+            #if use_otf_cal:
+            #    self.compute_tsys_spectrun()
+            #    self.reduced_spectra = np.array(spectra) * self.tsys_spectrum
+        elif stype == 2: # type == 2:
             if self.nrefs != 0:
                 self.compute_reference_spectra()
                 #nbins = self.nrefs - 1
@@ -303,14 +338,19 @@ class RoachSpec():
                     start_ref_bin = self.get_nearest_reference(istart-1, left=True)
                     istop = self.on_ranges[ibin][1]
                     stop_ref_bin = self.get_nearest_reference(istop+1, left=False)
+                    if use_otf_cal:
+                        tsys_bin = self.get_previous_hot(istart-1)
                     for i in range(istart, istop + 1):
                         ref = (self.reference_spectra[start_ref_bin] + 
                                self.reference_spectra[stop_ref_bin]) / 2
-                        spectra.append((self.raw_spec[i,:] - ref) / ref)
+                        if use_otf_cal:
+                            spectra.append( ((self.raw_spec[i, :] - ref) / ref) * self.tsys_spectra[tsys_bin] )
+                        else:
+                            spectra.append((self.raw_spec[i,:] - ref) / ref)
             else:
                 for i in self.ons:
                     spectra.append((self.raw_spec[i,:]))
-        elif type == 3: # type == 3:
+        elif stype == 3: # type == 3:
             if self.nrefs != 0:
                 self.compute_reference_spectra()
                 #nbins = self.nrefs - 1
@@ -321,22 +361,34 @@ class RoachSpec():
                     istop = self.on_ranges[ibin][1]
                     stop_ref_bin = self.get_nearest_reference(istop+1, left=False)                    
                     mapwidth = istop - istart
+                    if use_otf_cal:
+                        tsys_bin = self.get_previous_hot(istart-1)                    
                     for i in range(istart, istop + 1):
                         wt1 = float(mapwidth - (i - istart))/float(mapwidth)
                         wt2 = 1 - wt1
                         ref = (wt1 * self.reference_spectra[start_ref_bin] + 
                                wt2 * self.reference_spectra[stop_ref_bin])
-                        spectra.append((self.raw_spec[i,:] - ref) / ref)
+                        if use_otf_cal:
+                            spectra.append( ((self.raw_spec[i,:] - ref) / ref) * self.tsys_spectra[tsys_bin] )
+                        else:
+                            spectra.append((self.raw_spec[i,:] - ref) / ref)
             else:
                 for i in self.ons:
                     spectra.append((self.raw_spec[i,:]))
                         
         # save reduced spectra as a 2D numpy array
-        # calibrate it if requested 
-        if calibrate == False:
-            self.reduced_spectra = np.array(spectra) * tsys_no_cal
+        # calibrate it if requested
+        # do special things if use_otf_cal is True
+        if use_otf_cal:
+            if stype in (0, 1):
+                self.reduced_spectra = np.array(spectra) * self.tsys_spectrum
+            else:
+                self.reduced_spectra = np.array(spectra)
         else:
-            self.reduced_spectra = np.array(spectra) * tsys_spectrum
+            if calibrate == False:
+                self.reduced_spectra = np.array(spectra) * tsys_no_cal
+            else:
+                self.reduced_spectra = np.array(spectra) * tsys_spectrum
 
     def baseline(self, spectrum, baseline_list, n_baseline_list,
                  baseline_order=0):
